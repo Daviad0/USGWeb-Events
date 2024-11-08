@@ -7,6 +7,7 @@
 <html>
     <head>
         <title>Events</title>
+        <link rel="stylesheet" type="text/css" href="general.css">
     </head>
     <body>
         <div class="heading">
