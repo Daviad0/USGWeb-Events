@@ -1,0 +1,36 @@
+{
+  "name": "usg-internal",
+  "version": "1.0.0",
+  "description": "Internal service for USG website",
+  "main": "index.js",
+  "scripts": {
+    "start": "node ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Daviad0/USGWeb-Events.git"
+  },
+  "keywords": [
+    "USG",
+    "Michigan",
+    "Tech"
+  ],
+  "author": "David Reeves",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Daviad0/USGWeb-Events/issues"
+  },
+  "homepage": "https://github.com/Daviad0/USGWeb-Events#readme",
+  "dependencies": {
+    "@keepsolutions/cas-authentication": "^1.0.2",
+    "body-parser": "^1.20.3",
+    "cas-authentication": "^0.0.8",
+    "dotenv": "^16.4.7",
+    "ejs": "^3.1.10",
+    "express": "^4.21.2",
+    "express-session": "^1.18.1",
+    "keeps-cas-authentication": "^1.0.0",
+    "mysql": "^2.18.1",
+    "mysql2": "^3.11.5"
+  }
+}

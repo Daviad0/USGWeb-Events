@@ -1,0 +1,34 @@
+<div class="heading">
+    <img src="Crest_edited.png" alt="Crest" class="crest">
+    <div class="buttons">
+        <% if(!session || !session.loggedIn) { %>
+            <button class="hover-button">
+                <span class="material-symbols-outlined">person</span>
+                <div class="sub">
+                    <span class="background medium">Log In</span>
+                </div>
+            </button>
+        <% } else { %>
+            <span class="large"><%= session.username %></span>
+            <% if(session.accessLevel == 'admin') { %>
+                <button class="hover-button">
+                    <span class="material-symbols-outlined">tune</span>
+                    <div class="sub">
+                        <span class="background medium">Settings</span>
+                    </div>
+                </button>
+            <% } %>
+            <% if(session.accessLevel == 'none') { %>
+                <span class="large">
+                    <span title="You do not have access to the internal USG application" class="material-symbols-outlined">warning</span>
+                </span>
+            <% } %>
+            <button class="hover-button">
+                <span class="material-symbols-outlined">key</span>
+                <div class="sub">
+                    <span class="background medium">Log Out</span>
+                </div>
+            </button>
+        <% } %>
+    </div>
+</div>

@@ -1,0 +1,266 @@
+@font-face {
+    font-family: 'Coolvetica';
+    src: url('coolvetica\ rg.otf');
+}
+
+.material-symbols-outlined {
+  font-variation-settings:
+  'FILL' 0,
+  'wght' 200,
+  'GRAD' 200,
+  'opsz' 20
+}
+
+:root{
+    --usg-primary: #ffcd00;
+    --usg-secondary: #000000;
+    --usg-background: #f0f0f0;
+    --usg-segment: #d3d3d3;
+    --usg-error: #eb2c49;
+}
+
+*{
+    font-family: 'Coolvetica', sans-serif;
+    box-sizing: border-box;
+}
+
+span{
+    display: block;
+    text-align: center;
+}
+
+html{
+    margin: 0;
+    padding: 0;
+}
+
+body{
+    margin: 0;
+    padding: 0;
+    background-color: var(--usg-background);
+}
+
+.heading{
+
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 80px;
+
+    width: 100%;
+    background-color: var(--usg-primary);
+    color: var(--usg-secondary);
+
+    z-index: 1000;
+}
+
+.heading img{
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    width: 80px;
+}
+
+.heading .buttons{
+    position: fixed;
+    top: 0px;
+    height: 80px;
+    right: 20px;
+
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+}
+
+.heading .buttons button{
+    margin: 0 10px;
+    padding: 10px;
+    background-color: var(--usg-secondary);
+    color: var(--usg-background);
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+button{
+    margin: 5px;
+    padding: 5px 10px;
+    background-color: var(--usg-secondary);
+    color: var(--usg-background);
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.heading .buttons > span{
+    margin: 0px 5px;
+}
+
+.hover-button{
+    display: flex;
+}
+
+.hover-button .sub{
+    max-width: 0px;
+    overflow: hidden;
+    transition: all 0.5s ease-in-out;
+    margin: 0px;
+    white-space: nowrap;
+    
+}
+
+.hover-button:hover .sub{
+    max-width: 100px;
+    margin: 0px 5px;
+}
+
+.flex-center{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.align-end{
+    align-items: end;
+}
+
+.flex-apart{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.flex-1{
+    flex: 1;
+}
+
+.flex-2{
+    flex: 2;
+}
+
+.flex-3{
+    flex: 3;
+}
+
+.small{
+    font-size: 0.8em;
+}
+
+.medium{
+    font-size: 1.2em;
+}
+
+.large{
+    font-size: 1.6em;
+}
+
+.huge{
+    font-size: 2em;
+}
+
+.section{
+    padding: 20px;
+}
+
+.background{
+    color: var(--usg-background);
+}
+
+.primary{
+    color: var(--usg-primary);
+}
+
+.secondary{
+    color: var(--usg-secondary);
+}
+
+.error{
+    color: var(--usg-error);
+}
+
+.bg-primary{
+    background-color: var(--usg-primary);
+}
+
+.bg-secondary{
+    background-color: var(--usg-secondary);
+}
+
+.bg-error{
+    background-color: var(--usg-error);
+}
+
+.content{
+    position: absolute;
+    top: 80px;
+    left: 0;
+    width: 100%;
+}
+
+.segment{
+    background-color: var(--usg-segment);
+    padding: 10px 20px;
+    margin: 5px;
+    border-radius: 8px;
+}
+
+.segment.category{
+    width: 80%;
+    max-width: 700px;
+}
+
+.segment.category .links-container {
+    background-color: var(--usg-background);
+    padding: 10px;
+    margin: 5px;
+    margin-bottom: 10px;
+    border-radius: 8px;
+}
+
+.segment.category .link {
+    margin: 3px 10px;
+}
+
+.segment.category .link input {
+    font-size: .6em;
+}
+
+.segment.category input.error {
+    color: var(--usg-error);
+    border: 1px solid var(--usg-error) !important;
+}
+
+.segment.category button {
+    font-size: 1em;
+    margin: 0px 2px;
+}
+
+
+.segment.member{
+    width: 80%;
+    max-width: 700px;
+}
+
+input[type="text"], input[type="password"], input[type="email"], input[type="number"], input[type="date"], input[type="time"], input[type="file"], input[type="color"], select, textarea{
+    padding: 4px 8px;
+    margin: 5px;
+    border: 1px solid var(--usg-segment);
+    background-color: var(--usg-background);
+    border-radius: 8px;
+    transition: all 0.5s ease-in-out;
+}
+
+select{
+    padding: 4px 8px;
+    margin: 5px;
+    border: 1px solid var(--usg-segment);
+    background-color: var(--usg-background);
+    border-radius: 8px;
+}
+
+label{
+    text-align: left;
+    margin: 0px 10px;
+    font-size: .7em;
+    display: block;
+}

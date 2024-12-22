@@ -1,0 +1,510 @@
+<%- include('components/common') %>
+<%- include('components/header', { session: session }) %>
+
+<div class="content">
+    <br/>
+
+    <div class="flex-center">
+        <span class="huge">USG Website Navigation Editor</span>
+    </div>
+    <div class="flex-center">
+        <span class="medium"><i id="nav-version">Receiving Version from Website...</i></span>
+    </div>
+    <div class="flex-center">
+        <button class="hover-button flex-center" id="publish">
+            <span class="material-symbols-outlined">save</span>
+            <div class="sub">
+                <span class="background medium">Publish</span>
+            </div>
+        </button>
+        <button class="hover-button flex-center" id="download">
+            <span class="material-symbols-outlined">download</span>
+            <div class="sub">
+                <span class="background medium">Download</span>
+            </div>
+        </button>
+        <button class="hover-button flex-center" id="upload">
+            <span class="material-symbols-outlined">upload_file</span>
+            <div class="sub">
+                <span class="background medium">Upload</span>
+            </div>
+        </button>
+    </div>
+
+    <br/>
+    <hr/>
+    <br/>
+
+    <div id="existing-segments">
+        <div class="flex-center">
+            <div class="segment category" data-uuid="abcd">
+                <div class="flex-apart">
+                    <div>
+                        <label>Category Name*</label>
+                        <input name="category-name" type="text" placeholder="Name" />
+
+                    </div>
+                    <div class="flex-center">
+                        <div>
+                            <label>Category URL</label>
+                            <input name="category-url" type="text" placeholder="/url" />
+    
+                        </div>
+                    </div>
+                </div>
+                <label>Attached Links</label>
+                <div class="links-container">
+                    <div class="links">
+                        <div class="link flex-apart" data-uuid="efgh">
+                            <div>
+                                <label>Link Name*</label>
+                                <input name="link-name" type="text" placeholder="Name" />
+                            </div>
+                            <div>
+                                <label>Link URL*</label>
+                                <input name="link-url" type="text" placeholder="/url" />
+                            </div>
+                            <div>
+                                <label>Color</label>
+                                <input name="link-color" type="color" value="#ffffff" />
+                            </div>
+                            <div class="flex-center" class="flex-1">
+                                <button class="hover-button flex-center">
+                                    <span class="material-symbols-outlined small">arrow_upward</span>
+                                    <div class="sub">
+                                        <span class="background small">Move Up</span>
+                                    </div>
+                                </button>
+                                <button class="hover-button flex-center">
+                                    <span class="material-symbols-outlined small">arrow_downward</span>
+                                    <div class="sub">
+                                        <span class="background small">Move Down</span>
+                                    </div>
+                                </button>
+                                <button class="hover-button bg-error flex-center">
+                                    <span class="material-symbols-outlined small">close</span>
+                                    <div class="sub">
+                                        <span class="background small">Remove</span>
+                                    </div>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex-apart">
+                        <div></div>
+                        <div class="flex-center">
+                            <button class="hover-button flex-center">
+                                <span class="material-symbols-outlined small">add_link</span>
+                                <div class="sub">
+                                    <span class="background small">Add Link</span>
+                                </div>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flex-apart">
+                    <div></div>
+                    <div class="flex-center" class="flex-1">
+                        <button class="hover-button flex-center">
+                            <span class="material-symbols-outlined small">arrow_upward</span>
+                            <div class="sub">
+                                <span class="background small">Move Up</span>
+                            </div>
+                        </button>
+                        <button class="hover-button flex-center">
+                            <span class="material-symbols-outlined small">arrow_downward</span>
+                            <div class="sub">
+                                <span class="background small">Move Down</span>
+                            </div>
+                        </button>
+                        <button class="hover-button bg-error flex-center">
+                            <span class="material-symbols-outlined small">close</span>
+                            <div class="sub">
+                                <span class="background small">Remove</span>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="flex-center">
+        <button id="add-category" class="hover-button flex-center">
+            <span class="material-symbols-outlined">add</span>
+            <div class="sub">
+                <span class="background medium">Add Category</span>
+            </div>
+        </button>
+    </div>
+    
+
+    
+</div>
+
+<script>
+    let structure = {};
+
+    function getInitialStructure() {
+        fetch('/internal/nav_data.json')
+            .then(response => response.json())
+            .then(data => {
+                structure = data;
+                initializeView();
+            });
+    }
+
+    function uploadData(){
+        let input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.json';
+        input.onchange = (event) => {
+            let file = event.target.files[0];
+            let reader = new FileReader();
+            reader.onload = (event) => {
+                let data = JSON.parse(event.target.result);
+
+                // check if data has a version
+                if(data.version == undefined){
+                    alert('Data does not have a version. Invalid file!');
+                    return;
+                }
+
+                structure = data;
+                initializeView();
+            }
+            reader.readAsText(file);
+        }
+        input.click();
+    }
+
+    function downloadData(){
+
+        let version = structure.version;
+        // format version as YYYY.MM.DD.HH.MM
+        let date = new Date();
+        let year = date.getFullYear();
+        let month = date.getMonth() + 1;
+        let day = date.getDate();
+        let hours = date.getHours();
+        let minutes = date.getMinutes();
+        let formattedVersion = `${year}.${month.toString().padStart(2, "0")}.${day.toString().padStart(2, "0")}.${hours.toString().padStart(2, "0")}.${minutes.toString().padStart(2, "0")}`;
+        structure.version = formattedVersion;
+
+        let data = JSON.stringify(structure);
+        let blob = new Blob([data], {type: 'application/json'});
+        let url = URL.createObjectURL(blob);
+        let a = document.createElement('a');
+        a.href = url;
+        a.download = 'nav_data.json';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+    }
+
+    function addCategory(){
+        let category = {
+            uuid: generateUUID(),
+            name: '',
+            link: '',
+            links: []
+        };
+
+        structure.categories.push(category);
+        renderCategory(category);
+    }
+
+    function addLink(categoryUUID){
+        let link = {
+            uuid: generateUUID(),
+            title: '',
+            link: '',
+            special: undefined
+        };
+
+        let category = structure.categories.find(category => category.uuid == categoryUUID);
+        category.links.push(link);
+        renderLink(link, categoryUUID);
+    }
+
+    var inputmapping = {
+        'link-name': 'title',
+        'link-url': 'link',
+        'link-color': 'special'
+    }
+
+    function editLink(linkUUID, name){
+        let category = structure.categories.find(category => category.links.find(link => link.uuid == linkUUID));
+        let link = category.links.find(link => link.uuid == linkUUID);
+        
+        let element = document.querySelector(`.link[data-uuid="${linkUUID}"] input[name="${name}"]`);
+        let mapping = inputmapping[name];
+        link[mapping] = element.value;
+        element.classList.remove('error');
+        if(link[mapping] == ''){
+            if(['title', 'link'].includes(mapping)){
+                element.classList.add('error');
+            }
+        }
+    }
+
+    var categoryInputMapping = {
+        'category-name': 'name',
+        'category-url': 'link'
+    }
+
+    function editCategory(categoryUUID, name){
+        let category = structure.categories.find(category => category.uuid == categoryUUID);
+        
+        let element = document.querySelector(`.category[data-uuid="${categoryUUID}"] input[name="${name}"]`);
+        let mapping = categoryInputMapping[name];
+        category[mapping] = element.value;
+        element.classList.remove('error');
+        if(category[mapping] == ''){
+            if(['name'].includes(mapping)){
+                element.classList.add('error');
+            }
+        }
+    }
+
+    function removeLink(linkUUID){
+        let category = structure.categories.find(category => category.links.find(link => link.uuid == linkUUID));
+        let linkIndex = category.links.findIndex(link => link.uuid == linkUUID);
+        category.links.splice(linkIndex, 1);
+
+        let linkElement = document.querySelector(`.link[data-uuid="${linkUUID}"]`);
+        linkElement.remove();
+    }
+
+    function removeCategory(categoryUUID){
+        let categoryIndex = structure.categories.findIndex(category => category.uuid == categoryUUID);
+        structure.categories.splice(categoryIndex, 1);
+
+        let categoryElement = document.querySelector(`.category[data-uuid="${categoryUUID}"]`);
+        categoryElement.remove();
+    }
+
+    function moveLink(linkUUID, direction){
+        let category = structure.categories.find(category => category.links.find(link => link.uuid == linkUUID));
+        let linkIndex = category.links.findIndex(link => link.uuid == linkUUID);
+
+        if(direction == 'up' && linkIndex > 0){
+            let temp = category.links[linkIndex - 1];
+            category.links[linkIndex - 1] = category.links[linkIndex];
+            category.links[linkIndex] = temp;
+        } else if(direction == 'down' && linkIndex < category.links.length - 1){
+            let temp = category.links[linkIndex + 1];
+            category.links[linkIndex + 1] = category.links[linkIndex];
+            category.links[linkIndex] = temp;
+        }
+
+        let linkElement = document.querySelector(`.link[data-uuid="${linkUUID}"]`);
+        let linksElement = linkElement.parentElement;
+        linksElement.innerHTML = '';
+
+        category.links.forEach(link => {
+            renderLink(link, category.uuid);
+        });
+    }
+
+    function moveCategory(categoryUUID, direction){
+        let categoryIndex = structure.categories.findIndex(category => category.uuid == categoryUUID);
+
+        if(direction == 'up' && categoryIndex > 0){
+            let temp = structure.categories[categoryIndex - 1];
+            structure.categories[categoryIndex - 1] = structure.categories[categoryIndex];
+            structure.categories[categoryIndex] = temp;
+        } else if(direction == 'down' && categoryIndex < structure.categories.length - 1){
+            let temp = structure.categories[categoryIndex + 1];
+            structure.categories[categoryIndex + 1] = structure.categories[categoryIndex];
+            structure.categories[categoryIndex] = temp;
+        }
+
+        let categoryElement = document.querySelector(`.category[data-uuid="${categoryUUID}"]`);
+        let existingSegments = document.getElementById('existing-segments');
+        existingSegments.innerHTML = '';
+
+        structure.categories.forEach(category => {
+            renderCategory(category);
+        });
+    }
+
+    function renderLink(link, categoryUUID){
+
+        if(link.uuid == undefined){
+            link.uuid = generateUUID();
+        }
+
+        let htmlToAdd = `
+        <div class="link flex-apart" data-uuid="${link.uuid}">
+            <div>
+                <label>Link Name*</label>
+                <input onchange="editLink('${link.uuid}', 'link-name')" name="link-name" type="text" placeholder="Name" value="${link.title}" />
+            </div>
+            <div>
+                <label>Link URL*</label>
+                <input onchange="editLink('${link.uuid}', 'link-url')" name="link-url" type="text" placeholder="/url" value="${link.link}" />
+            </div>
+            <div>
+                <label>Color</label>
+                <input onchange="editLink('${link.uuid}', 'link-color')" name="link-color" type="color" value="#ffffff" value="${link.special}" />
+            </div>
+            <div class="flex-center" class="flex-1">
+                <button class="hover-button flex-center" onclick="moveLink('${link.uuid}', 'up')">
+                    <span class="material-symbols-outlined small">arrow_upward</span>
+                    <div class="sub">
+                        <span class="background small">Move Up</span>
+                    </div>
+                </button>
+                <button class="hover-button flex-center" onclick="moveLink('${link.uuid}', 'down')">
+                    <span class="material-symbols-outlined small">arrow_downward</span>
+                    <div class="sub">
+                        <span class="background small">Move Down</span>
+                    </div>
+                </button>
+                <button class="hover-button bg-error flex-center" onclick="removeLink('${link.uuid}')">
+                    <span class="material-symbols-outlined small">close</span>
+                    <div class="sub">
+                        <span class="background small">Remove</span>
+                    </div>
+                </button>
+            </div>
+        </div>
+        `
+
+        let categoryElement = document.querySelector(`.category[data-uuid="${categoryUUID}"] .links`);
+        categoryElement.innerHTML += htmlToAdd;
+    }
+
+    function renderCategory(category){
+
+        if(category.uuid == undefined){
+            category.uuid = generateUUID();
+        }
+
+        let htmlToAdd = `
+        <div class="flex-center">
+            <div class="segment category" data-uuid="${category.uuid}">
+                <div class="flex-apart">
+                    <div>
+                        <label>Category Name*</label>
+                        <input onchange="editCategory('${category.uuid}', 'category-name')" name="category-name" type="text" placeholder="Name" value="${category.name}" />
+
+                    </div>
+                    <div class="flex-center">
+                        <div>
+                            <label>Category URL</label>
+                            <input onchange="editCategory('${category.uuid}', 'category-url')" name="category-url" type="text" placeholder="/url" value="${category.link}" />
+    
+                        </div>
+                    </div>
+                </div>
+                <label>Attached Links</label>
+                <div class="links-container">
+                    <div class="links">
+                    
+                    </div>
+                    <div class="flex-apart">
+                        <div></div>
+                        <div class="flex-center">
+                            <button class="hover-button flex-center" onclick="addLink('${category.uuid}')">
+                                <span class="material-symbols-outlined small">add_link</span>
+                                <div class="sub">
+                                    <span class="background small">Add Link</span>
+                                </div>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flex-apart">
+                    <div></div>
+                    <div class="flex-center" class="flex-1">
+                        <button class="hover-button flex-center" onclick="moveCategory('${category.uuid}', 'up')">
+                            <span class="material-symbols-outlined small">arrow_upward</span>
+                            <div class="sub">
+                                <span class="background small">Move Up</span>
+                            </div>
+                        </button>
+                        <button class="hover-button flex-center" onclick="moveCategory('${category.uuid}', 'down')">
+                            <span class="material-symbols-outlined small">arrow_downward</span>
+                            <div class="sub">
+                                <span class="background small">Move Down</span>
+                            </div>
+                        </button>
+                        <button class="hover-button bg-error flex-center" onclick="removeCategory('${category.uuid}')">
+                            <span class="material-symbols-outlined small">close</span>
+                            <div class="sub">
+                                <span class="background small">Remove</span>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        `
+
+        let existingSegments = document.getElementById('existing-segments');
+
+        existingSegments.innerHTML += htmlToAdd;
+
+        category.links.forEach(link => {
+            renderLink(link, category.uuid);
+        });
+    }
+
+    function generateUUID() {
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+            var r = Math.random() * 16 | 0,
+                v = c == 'x' ? r : (r & 0x3 | 0x8);
+            return v.toString(16);
+        });
+    }
+
+    function initializeView(){
+        let navVersion = document.getElementById('nav-version');
+        navVersion.innerHTML = `Version: ${structure.version}`;
+
+        structure.categories.forEach(category => {
+            renderCategory(category);
+        });
+    }
+
+    function publish(){
+
+        // format version as YYYY.MM.DD.HH.MM
+        let date = new Date();
+        let year = date.getFullYear();
+        let month = date.getMonth() + 1;
+        let day = date.getDate();
+        let hours = date.getHours();
+        let minutes = date.getMinutes();
+        let formattedVersion = `${year}.${month.toString().padStart(2, "0")}.${day.toString().padStart(2, "0")}.${hours.toString().padStart(2, "0")}.${minutes.toString().padStart(2, "0")}`;
+        structure.version = formattedVersion;
+
+
+        document.getElementById('publish').disabled = true;
+
+        post('/internal/api/navigation', {
+            navigation: JSON.stringify(structure)
+        })
+            .then(() => {
+                alert('Published successfully!');
+                location.reload();
+            })
+            .catch((err) => {
+                alert('An error occurred: ' + err);
+            });
+    }
+
+    document.getElementById('publish').addEventListener('click', publish);
+    document.getElementById('upload').addEventListener('click', uploadData);
+    document.getElementById('download').addEventListener('click', downloadData);
+
+    document.getElementById('add-category').addEventListener('click', addCategory);
+
+    getInitialStructure();
+
+</script>   
