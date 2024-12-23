@@ -90,6 +90,12 @@ button{
     border: none;
     border-radius: 8px;
     cursor: pointer;
+    transition: all 0.5s ease-in-out;
+}
+
+button:disabled{
+    opacity: 0.7;
+    cursor: not-allowed;
 }
 
 .heading .buttons > span{
@@ -109,7 +115,7 @@ button{
     
 }
 
-.hover-button:hover .sub{
+.hover-button:hover:enabled .sub{
     max-width: 100px;
     margin: 0px 5px;
 }
@@ -167,7 +173,7 @@ button{
 }
 
 .primary{
-    color: var(--usg-primary);
+    color: var(--usg-primary) !important;
 }
 
 .secondary{

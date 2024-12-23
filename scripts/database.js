@@ -44,6 +44,40 @@ const getEndpoints = {
                 resolve(results);
             });
         });
+    },
+    profiles: (usePositions) => {
+        if(usePositions){
+            return new Promise((resolve, reject) => {
+                connection.query('SELECT * FROM usg_profiles WHERE position IN (?)', [usePositions.join("','")],  (error, results, fields) => {
+                    if (error) {
+                        reject(error);
+                    }
+    
+                    resolve(results);
+                });
+            });
+        }
+
+        return new Promise((resolve, reject) => {
+            connection.query('SELECT * FROM usg_profiles', (error, results, fields) => {
+                if (error) {
+                    reject(error);
+                }
+
+                resolve(results);
+            });
+        });
+    },
+    profile: (username) => {
+        return new Promise((resolve, reject) => {
+            connection.query('SELECT * FROM usg_profiles WHERE username = ?', [username], (error, results, fields) => {
+                if (error) {
+                    reject(error);
+                }
+
+                resolve(results);
+            });
+        });
     }
 };
 
