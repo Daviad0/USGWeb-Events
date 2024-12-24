@@ -1,0 +1,306 @@
+<%- include('components/common') %>
+<%- include('components/header', { session: session }) %>
+
+
+<div class="content">
+    <br/>
+
+    <div class="flex-center">
+        <span class="huge">Manage All USG Profiles</span>
+    </div>
+    <br/>
+    <div class="flex-center">
+        <span class="medoim">Summary</span>
+    </div>
+    <div class="flex-center">
+        <div class="status-bar flex-center">
+            <div class="status bad left selected">0 - Hidden</div>
+            <div class="status bad selected">0 - Pending Edits</div>
+            <div class="status selected">0 - Under Review</div>
+            <div class="status good right selected">0 - OK</div>
+        </div>
+    </div>
+
+    <br/>
+    <hr/>
+    <br/>
+
+    <div>
+        <span class="medium">Add Profile</span>
+        <div class="flex-center align-end">
+            <div name="members">
+                <div name="add-member" class="flex-center">
+                    <input type="text" placeholder="Username" id="username" />
+                </div>
+            </div>
+            <button id="add" class="flex-center">
+                <span class="background small">Add</span>
+            </button>
+        </div>
+    </div>
+    <br/>
+
+    <div>
+        <% profiles.forEach(p => { %>
+
+            <div class="flex-center">
+                <div class="segment member" data-username="<%= p.username %>">
+                    <div class="flex-apart">
+                        <div class="flex-center">
+                            <span class="medium"><i name="profile-username"><%= p.username %> </i></span>
+                            <input class="small" type="text" placeholder="USG Member" name="name" onchange="editProfile('<%= p.username %>', 'name')" value="<%= p.name %>"/>
+                            
+                        </div>
+                        
+                        <div class="flex-center">
+                            <% let bgColor = 'bg-error'; %>
+                            <% if(p.status == 'review'){ bgColor = 'bg-secondary'; } %>
+                            <% if(p.status == 'ok'){ bgColor = 'bg-success'; } %>
+                            <select class="<%= bgColor %> small" name="status" onchange="editProfile('<%= p.username %>', 'status')">
+                                <option value="hide" <% if(p.status == "hide") { %> selected <% } %>>Hidden</option>
+                                <option value="bad" <% if(p.status == "bad") { %> selected <% } %>>Pending Edits</option>
+                                <option value="review" <% if(p.status == "review") { %> selected <% } %>>Under Review</option>
+                                <option value="ok" <% if(p.status == "ok") { %> selected <% } %>>OK</option>
+                            </select>
+                            <button class="hover-button flex-center" onclick="window.location.href='/internal/profile?profile=<%= p.username %>'">
+                                <span class="material-symbols-outlined small">edit</span>
+                                <div class="sub">
+                                    <span class="background small">Edit</span>
+                                </div>
+                            </button>
+                            <button class="hover-button flex-center" onclick="removeProfile('<%= p.username %>')">
+                                <span class="material-symbols-outlined small">delete_forever</span>
+                                <div class="sub">
+                                    <span class="background small">Delete</span>
+                                </div>
+                            </button>
+                        </div>
+                        
+                    </div>
+                    <div class="flex-apart">
+                        <div>
+                            <label>Position</label>
+                            <input type="text" placeholder="Position" name="position" onchange="editProfile('<%= p.username %>', 'position')" value="<%= p.position %>"/>
+                        </div>
+                        <div class="flex-1">
+                            <label>Committees</label>
+                            <input class="expand-x" type="text" placeholder="Position" name="committees" onchange="editCommittees('<%= p.username %>')"/>
+                        </div>
+                    </div>
+                    <div class="flex-apart">
+                        <div class="flex-1">
+                            <label>Photo Link</label>
+                            <input class="expand-x" type="text" placeholder="Photo URL (Leave Blank for Default)" value="<%= p.photo %>" name="photo" onchange="editProfile('<%= p.username %>', 'photo')"/>
+                        </div>
+                    </div>
+                    <input class="no-display" type="text" name="description" value="<%= p.description %>"/>
+                </div>
+            </div>
+            
+
+        <% }) %>
+        
+        <!-- <span class="medium">Add Members</span>
+        <div class="flex-center align-end">
+            <div name="members">
+                <div style="display:none" id="add-member-template" class="flex-center">
+                    <input type="text" placeholder="Username" />
+                    <select>
+                        <option value="user">User</option>
+                        <option value="admin">Admin</option>
+                    </select>
+                </div>
+                <div name="add-member" class="flex-center">
+                    <input type="text" placeholder="Username" />
+                    <select>
+                        <option value="user">User</option>
+                        <option value="admin">Admin</option>
+                    </select>
+                </div>
+            </div>
+            <button id="add" class="flex-center">
+                <span class="background small">Add</span>
+            </button>
+            <button id="append" class="flex-center">
+                <span class="background small">+</span>
+            </button>
+        </div> -->
+    </div>
+    <br/>
+</div>
+
+<script>
+    function addProfile(){
+
+        let usernames = document.getElementsByName('profile-username');
+        let found = false;
+
+        for(let i = 0; i < usernames.length; i++){
+            if(usernames[i].innerText == document.getElementById('username').value){
+                found = true;
+                break;
+            }
+        }
+
+        if(found){
+            alert("Profile already exists");
+            return;
+        }
+
+        
+        post('/internal/api/profile', {
+            username: document.getElementById('username').value,
+            contact: document.getElementById('username').value + "@mtu.edu"
+        }).then(res => {
+            window.location.reload();
+        }).catch(err => {
+            alert("Error adding profile");
+        });
+    }
+
+    function removeProfile(username){
+        post('/internal/api/profile', {
+            username: username,
+            delete: true
+        }).then(res => {
+            document.querySelector(`.member[data-username="${username}"]`).remove();
+        }).catch(err => {
+            alert("Error removing profile");
+        });
+
+        updateCounts();
+    }
+
+    function updateCounts(){
+        let counts = {
+            hide: 0,
+            bad: 0,
+            review: 0,
+            ok: 0
+        };
+
+        let statuses = document.querySelectorAll('.member select[name="status"]');
+        statuses.forEach(s => {
+            counts[s.value]++;
+        });
+
+        document.querySelector('.status-bar .status.left').classList.remove('selected');
+        document.querySelector('.status-bar .status:nth-child(2)').classList.remove('selected');
+        document.querySelector('.status-bar .status:nth-child(3)').classList.remove('selected');
+        document.querySelector('.status-bar .status.right').classList.remove('selected');
+
+        document.querySelector('.status-bar .status.left').innerText = `${counts.hide} - Hidden`;
+        document.querySelector('.status-bar .status:nth-child(2)').innerText = `${counts.bad} - Pending Edits`;
+        document.querySelector('.status-bar .status:nth-child(3)').innerText = `${counts.review} - Under Review`;
+        document.querySelector('.status-bar .status.right').innerText = `${counts.ok} - OK`;
+
+        if(counts.hide > 0){
+            document.querySelector('.status-bar .status.left').classList.add('selected');
+        }
+        if(counts.bad > 0){
+            document.querySelector('.status-bar .status:nth-child(2)').classList.add('selected');
+        }
+        if(counts.review > 0){
+            document.querySelector('.status-bar .status:nth-child(3)').classList.add('selected');
+        }
+        if(counts.ok > 0){
+            document.querySelector('.status-bar .status.right').classList.add('selected');
+        }
+
+
+    }
+
+    function editCommittees(username){
+        let committees = document.querySelector(`.member[data-username="${username}"] input[name="committees"]`).value;
+        let description = document.querySelector(`.member[data-username="${username}"] input[name="description"]`).value;
+
+        if(!description){
+            description = {};
+        }else{
+            description = JSON.parse(description);
+        }
+
+        description.committees = committees;
+
+        document.querySelector(`.member[data-username="${username}"] input[name="description"]`).value = JSON.stringify(description);
+
+        post('/internal/api/profile', {
+            username: username,
+            description: JSON.stringify(description)
+        }).then(res => {
+            document.querySelector(`.member[data-username="${username}"] input[name="description"]`).value = JSON.stringify({committees: committees});
+        }).catch(err => {
+            alert("Error updating committees");
+        });
+    }
+
+    function parseCommittees(){
+        let members = document.querySelectorAll('.member');
+
+        Array.from(members).forEach(m => {
+            let committees = m.querySelector('input[name="committees"]');
+            let description = m.querySelector('input[name="description"]');
+
+            if(!committees || !description){
+                return;
+            }
+
+            description = description.value;
+            if(!description){
+                return;
+            }
+            description = JSON.parse(description);
+
+            if(description.committees){
+                committees.value = description.committees
+            }else{
+                committees.value = "";
+            }
+        });
+    }
+
+    updateCounts();
+    parseCommittees();
+
+
+    function editProfile(username, name){
+        let value = document.querySelector(`.member[data-username="${username}"] [name="${name}"]`);
+
+        if(!value){
+            return;
+        }
+
+        value = value.value;
+
+        let data = {};
+        data.username = username;
+        data[name] = value;
+
+        post('/internal/api/profile', data).then(res => {
+            if(name == 'status'){
+                document.querySelector(`.member[data-username="${username}"] select[name="status"]`).classList.remove('bg-error');
+                document.querySelector(`.member[data-username="${username}"] select[name="status"]`).classList.remove('bg-success');
+                document.querySelector(`.member[data-username="${username}"] select[name="status"]`).classList.remove('bg-secondary');
+
+                if(['hide', 'bad'].includes(value)){
+                    document.querySelector(`.member[data-username="${username}"] select[name="status"]`).classList.add('bg-error');
+                } else if(value == 'review'){
+                    document.querySelector(`.member[data-username="${username}"] select[name="status"]`).classList.add('bg-secondary');
+                } else {
+                    document.querySelector(`.member[data-username="${username}"] select[name="status"]`).classList.add('bg-success');
+                }
+
+                updateCounts();
+            } 
+        }).catch(err => {
+            alert("Error updating profile");
+            window.location.reload();
+        });
+    }
+
+
+    document.getElementById('add').addEventListener('click', addProfile);
+
+
+
+</script>

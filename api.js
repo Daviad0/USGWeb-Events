@@ -48,6 +48,69 @@ router.post('/member', async (req, res) => {
 });
 
 /**
+ * GET - /api/profile
+ *  - positions: string, CSV
+ * 
+ * Gets the profile information for a given position
+ */
+
+router.get('/profile', async (req, res) => {
+    let position = req.query.positions;
+    if(!position){
+        position = null;
+    }else{
+        position = position.split(',');
+    }
+    try {
+        let profile = await db.getEndpoints.profiles(position);
+        res.status(200).send(profile);
+    } catch (error) {
+        res.status(500).send('Error: ' + error);
+    }
+});
+
+/**
+ * POST - /api/profile
+ *  - username: string
+ *  - position: string
+ *  - contact: string
+ *  - photo: string
+ *  - name: string
+ *  - description: string
+ *  - status: string
+ *  - delete: boolean
+ * 
+ * Either creates or updates a profile in the database given the username passed into the system
+ */
+
+router.post('/profile', async (req, res) => {
+    let username = req.body.username;
+    let position = req.body.position;
+    let contact = req.body.contact;
+    let photo = req.body.photo;
+    let name = req.body.name;
+    let description = req.body.description;
+    let status = req.body.status;
+    let deleteProfile = req.body.delete;
+
+    if(deleteProfile){
+        try {
+            await db.removeEndpoints.profile(username);
+            res.status(200).send('Success');
+        } catch (error) {
+            res.status(500).send('Error: ' + error);
+        }
+        return;
+    }
+    try {
+        await db.postEndpoints.profile(username, position, contact, photo, name, description, status);
+        res.status(200).send('Success');
+    } catch (error) {
+        res.status(500).send('Error: ' + error);
+    }
+});
+
+/**
  * POST - /api/navigation
  *  - navigation: string (JSON)
  */

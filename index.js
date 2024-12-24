@@ -98,6 +98,37 @@ app.get(`${route}/navigation`, async (req, res) => {
     });
 });
 
+app.get(`${route}/profile`, async (req, res) => {
+
+    let user = 'djreeves';
+    if(req.query.profile){
+        user = req.query.profile;
+    }
+
+    let profile = await db.getEndpoints.profile(user);
+    if(profile.length == 0){
+        res.status(404).send('Profile not found');
+        return;
+    }
+
+    profile = profile[0];
+
+    res.render(__dirname + '/views/profile', {
+        session: req.session,
+        profile: profile
+    });
+});
+
+app.get(`${route}/profiles`, async (req, res) => {
+    
+    let profiles = await db.getEndpoints.profiles();
+
+    res.render(__dirname + '/views/profiles', {
+        session: req.session,
+        profiles: profiles
+    });
+});
+
 app.get(`${route}/nav_data.json`, (req, res) => {
     // return usg.mtu.edu/nav_data.json
 

@@ -1,0 +1,224 @@
+<%- include('components/common') %>
+<%- include('components/header', { session: session }) %>
+
+
+<div class="content">
+    <br/>
+
+    <div class="flex-center">
+        <span class="huge">Manage USG User Profile (Self)</span>
+    </div>
+    <br/>
+    <div class="flex-center">
+        <span class="medoim">Current Profile Status</span>
+    </div>
+    <div class="flex-center">
+        <div class="status-bar flex-center">
+            <div class="status bad left">Hidden</div>
+            <div class="status bad">Pending Edits</div>
+            <div class="status selected">Under Review</div>
+            <div class="status good right">OK</div>
+        </div>
+    </div>
+
+    <br/>
+    <hr/>
+    <br/>
+
+    <div>
+        <div class="flex-center">
+            <div>
+                <label class="small">Username</label>
+                <input type="text" class="medium" placeholder="Name" name="username" value="<%= profile.username %>" disabled/>
+            </div>
+            <div>
+                <label class="small">Position</label>
+                <input type="text" class="medium" placeholder="USG Position" name="position" value="<%= profile.position %>" disabled/>
+            </div>
+            <div>
+                <label class="small">Full Name</label>
+                <input type="text" class="medium" placeholder="Name" name="name" value="<%= profile.name %>" onchange="editProfile('name')"/>
+            </div>
+        </div>
+        <br/>
+        <div class="flex-center">
+            <div class="segment profile">
+                <span class="medium">Manage Profile Data</span>
+                <br/>
+                <div class="flex-center align-start">
+                    <div class="flex-2 left-col">
+                        <div>
+                            <label class="small">Contact Email</label>
+                            <input type="text" class="medium" placeholder="Email" name="contact" value="<%= profile.contact %>" onchange="editProfile('contact')"/>
+                        </div>
+                        <hr/>
+                        <div class="flex-center">
+                            <label>Pronouns</label>
+                            <input type="text" placeholder="He / Him / They / Them / She / Her" name="d_pronouns" onchange="editDescription('pronouns')"/>
+                        </div>
+                        <div class="flex-center">
+                            <label>Hometown</label>
+                            <input type="text" placeholder="Houghton, MI" name="d_from" onchange="editDescription('from')"/>
+                        </div>
+                        <div class="flex-center">
+                            <label>Committees</label>
+                            <input type="text" placeholder="Public Relations" name="d_committees" disabled/>
+                        </div>
+                        <div class="flex-center">
+                            <label>Major/Minors</label>
+                            <textarea type="text" placeholder="Majoring in CS" name="d_major" rows="2" onchange="editDescription('major')"></textarea>
+                        </div>
+                        <div class="flex-center">
+                            <label>Organizations</label>
+                            <textarea type="text" placeholder="Chess Club" name="d_clubs" rows="2" onchange="editDescription('clubs')"></textarea>
+                        </div>
+                        <div class="flex-center">
+                            <label>Quote</label>
+                            <textarea type="text" placeholder="Lalal" name="d_quote" rows="2" onchange="editDescription('quote')"></textarea>
+                        </div>
+                        <input type="text" placeholder="Description" value="<%= profile.description %>" name="description" class="no-display"/>
+
+                    </div>
+                    <div class="flex-1">
+                        <span class="medium" id="name"><%= profile.name %></span>
+                        <span class="small" id="position"><%= profile.position %></span>
+                        <div class="flex-center">
+                            <img class="photo" src="<%= profile.photo %>" onerror="this.src='https://cdn1.site-media.eu/images/0/11115977/Drawing.png'" />
+                        </div>
+                        <div>
+                            <label>Photo Link</label>
+                            <input type="text" placeholder="Photo" value="<%= profile.photo %>" name="photo" onchange="editProfile('photo')"/>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex-apart">
+                    <div></div>
+                    <div class="flex-center" class="flex-1">
+                        
+                        <button class="hover-button bg-error flex-center" onclick="window.location.reload()">
+                            <span class="material-symbols-outlined small">ink_eraser</span>
+                            <div class="sub">
+                                <span class="background small">Clear</span>
+                            </div>
+                        </button>
+                        <button class="hover-button flex-center" id="save">
+                            <span class="material-symbols-outlined small">save</span>
+                            <div class="sub">
+                                <span class="background small">Publish</span>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <br/>
+        <!-- <span class="medium">Add Members</span>
+        <div class="flex-center align-end">
+            <div name="members">
+                <div style="display:none" id="add-member-template" class="flex-center">
+                    <input type="text" placeholder="Username" />
+                    <select>
+                        <option value="user">User</option>
+                        <option value="admin">Admin</option>
+                    </select>
+                </div>
+                <div name="add-member" class="flex-center">
+                    <input type="text" placeholder="Username" />
+                    <select>
+                        <option value="user">User</option>
+                        <option value="admin">Admin</option>
+                    </select>
+                </div>
+            </div>
+            <button id="add" class="flex-center">
+                <span class="background small">Add</span>
+            </button>
+            <button id="append" class="flex-center">
+                <span class="background small">+</span>
+            </button>
+        </div> -->
+    </div>
+</div>
+
+<script>
+    let parseKeys = ['pronouns', 'from', 'committees', 'major', 'clubs', 'quote'];
+    let descriptionData = {};
+
+    let editsToSave = {
+
+    };
+
+    function parseDescription(){
+        let description = document.querySelector('input[name="description"]');
+        let value = description.value;
+
+        if(!description.value) return;
+
+        value = JSON.parse(value);
+
+        for(let key in parseKeys){
+            key = parseKeys[key];
+            let element = document.querySelector(`[name="d_${key}"]`);
+            if(element){
+                element.value = value[key] ? value[key] : '';
+                descriptionData[key] = value[key] ? value[key] : '';
+            }
+        }
+    }
+
+    function updatePreviews(){
+        document.querySelector('#name').innerText = document.querySelector('input[name="name"]').value;
+        document.querySelector('#position').innerText = document.querySelector('input[name="position"]').value;
+    }
+
+    function editProfile(name){
+        let value = document.querySelector(`[name="${name}"]`).value;
+
+        if(!value) return;
+
+        editsToSave[name] = value;
+
+        if(name == 'photo'){
+            document.querySelector('.photo').src = value;   
+        }
+
+        window.onbeforeunload = function() {
+            return true;
+        };
+    }
+
+    function editDescription(name){
+        let value = document.querySelector(`[name="d_${name}"]`).value;
+
+        if(!value) return;
+
+        descriptionData[name] = value;
+        editsToSave['description'] = JSON.stringify(descriptionData);
+
+        window.onbeforeunload = function() {
+            return true;
+        };
+    }
+
+    function saveEdits(){
+        let username = document.querySelector('input[name="username"]').value;
+        editsToSave['username'] = username;
+
+        post('/internal/api/profile', editsToSave).then(res => {
+            window.onbeforeunload = null;
+            window.location.reload();
+        }).catch(err => {
+            alert('Error saving edits');
+        });
+    }
+
+    document.querySelector('#save').addEventListener('click', saveEdits);
+
+    document.querySelector('input[name="name"]').addEventListener('keyup', updatePreviews);
+    document.querySelector('input[name="position"]').addEventListener('keyup', updatePreviews);
+
+    parseDescription();
+
+
+
+</script>

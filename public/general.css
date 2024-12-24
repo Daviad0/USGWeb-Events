@@ -17,6 +17,7 @@
     --usg-background: #f0f0f0;
     --usg-segment: #d3d3d3;
     --usg-error: #eb2c49;
+    --usg-success: #18c471;
 }
 
 *{
@@ -130,6 +131,10 @@ button:disabled{
     align-items: end;
 }
 
+.align-start{
+    align-items: start;
+}
+
 .flex-apart{
     display: flex;
     justify-content: space-between;
@@ -184,6 +189,10 @@ button:disabled{
     color: var(--usg-error);
 }
 
+.success{
+    color: var(--usg-success);
+}
+
 .bg-primary{
     background-color: var(--usg-primary);
 }
@@ -194,6 +203,14 @@ button:disabled{
 
 .bg-error{
     background-color: var(--usg-error);
+}
+
+.bg-success{
+    background-color: var(--usg-success);
+}
+
+.expand-x{
+    width: 100%;
 }
 
 .content{
@@ -213,6 +230,11 @@ button:disabled{
 .segment.category{
     width: 80%;
     max-width: 700px;
+}
+
+.segment.profile{
+    width: 80%;
+    max-width: 800px;
 }
 
 .segment.category .links-container {
@@ -242,9 +264,23 @@ button:disabled{
 }
 
 
+.segment.profile button {
+    font-size: 1em;
+    margin: 0px 2px;
+}
+
+.segment.member button {
+    font-size: 1em;
+    margin: 0px 2px;
+}
+
 .segment.member{
     width: 80%;
     max-width: 700px;
+}
+
+.segment.member input[name="name"]{
+    margin-left: 10px;
 }
 
 input[type="text"], input[type="password"], input[type="email"], input[type="number"], input[type="date"], input[type="time"], input[type="file"], input[type="color"], select, textarea{
@@ -254,6 +290,63 @@ input[type="text"], input[type="password"], input[type="email"], input[type="num
     background-color: var(--usg-background);
     border-radius: 8px;
     transition: all 0.5s ease-in-out;
+}
+
+
+.profile textarea{
+    height: 50px;
+    width: 100%;
+    resize: none;
+}
+
+.profile .left-col{
+    margin-right: 20px;
+}
+.profile input{
+    width: 100%;
+}
+
+.profile .photo{
+    margin:15px 0px;
+    width: 80%;
+    border-radius: 8px;
+    
+}
+
+.status-bar{
+    border-radius: 8px;
+    margin: 5px 0px;
+}
+
+.status-bar .status{
+    background-color: var(--usg-secondary);
+    color: var(--usg-background);
+    font-size: 0.7em;
+    margin: 0px 2px;
+    padding: 5px 10px;
+    opacity: 0.3;
+}
+
+.status.left{
+    border-radius: 20px 0px 0px 20px;
+}
+
+.status.right{
+    border-radius: 0px 20px 20px 0px;
+}
+
+.status.selected{
+    opacity: 1;
+}
+
+.status.good.selected{
+    background-color: var(--usg-success);
+    color: var(--usg-background);
+}
+
+.status.bad.selected{
+    background-color: var(--usg-error);
+    color: var(--usg-background);
 }
 
 select{
@@ -269,4 +362,28 @@ label{
     margin: 0px 10px;
     font-size: .7em;
     display: block;
+}
+
+select.bg-secondary{
+    background-color: var(--usg-secondary);
+    color: var(--usg-background);
+}
+
+select.bg-error{
+    background-color: var(--usg-error);
+    color: var(--usg-background);
+}
+
+select.bg-success{
+    background-color: var(--usg-success);
+    color: var(--usg-background);
+}
+
+.no-display{
+    display: none;
+}
+
+input:disabled{
+    cursor: not-allowed;
+    opacity: 0.7;
 }

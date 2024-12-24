@@ -93,6 +93,40 @@ const postEndpoints = {
                 resolve(results);
             });
         });
+    },
+    profile: (username, position, contact, photo, name, description, status) => {
+
+        
+        return new Promise(async (resolve, reject) => {
+            // get the current profile
+
+            let results = await getEndpoints.profile(username);
+            if(results.length > 0){
+                position = position || results[0].position;
+                contact = contact || results[0].contact;
+                photo = photo || results[0].photo;
+                name = name || results[0].name;
+                description = description || results[0].description;
+                status = status || results[0].status;
+
+                connection.query('UPDATE usg_profiles SET position = ?, contact = ?, photo = ?, name = ?, description = ?, updated = ?, status = ? WHERE username = ?', [position, contact, photo, name, description, new Date(), status, username], (error, results, fields) => {
+                    if (error) {
+                        reject(error);
+                    }
+    
+                    resolve(results);
+                });
+
+            }else{
+                connection.query('INSERT INTO usg_profiles (username, contact, updated) VALUES (?, ?, ?)', [username, contact, new Date()], (error, results, fields) => {
+                    if (error) {
+                        reject(error);
+                    }
+    
+                    resolve(results);
+                });
+            }
+        });
     }
 }
 
@@ -100,6 +134,17 @@ const removeEndpoints = {
     member: (username) => {
         return new Promise((resolve, reject) => {
             connection.query('DELETE FROM usg_members WHERE username = ?', [username], (error, results, fields) => {
+                if (error) {
+                    reject(error);
+                }
+
+                resolve(results);
+            });
+        });
+    },
+    profile: (username) => {
+        return new Promise((resolve, reject) => {
+            connection.query('DELETE FROM usg_profiles WHERE username = ?', [username], (error, results, fields) => {
                 if (error) {
                     reject(error);
                 }
