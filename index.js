@@ -25,7 +25,7 @@ app.set('view engine', 'ejs');
 
 const cas = new CASAuthentication({
     cas_url         : 'https://sso.mtu.edu/cas',
-    service_url     : 'https://usg.mtu.edu/internal/account',
+    service_url     : 'https://usg.mtu.edu/internal/authenticate',
     cas_version     : '3.0',
     renew           : false,
     is_dev_mode     : true,
@@ -46,8 +46,6 @@ const cas = new CASAuthentication({
     destroy_session : false
 });
 
-
-
 // add public folder
 app.use(route, express.static(__dirname + '/public'));
 app.use(body_parser.json());
@@ -63,6 +61,18 @@ app.use(session({
 // use api routes
 app.use(`${route}/api`, api);
 
+app.get(`${route}/authenticate`, cas.bounce, (req, res) => {
+    res.redirect('/internal');
+});
+
+app.get(`${route}/logout`, cas.logout, (req, res) => {
+    res.redirect('/internal');
+});
+
+app.get(`/test`, (req, res) => {
+    res.sendFile(__dirname + '/testing/member-profile.html');
+});
+
 app.get(`/nav_data.json`, (req, res) => {
     // return usg.mtu.edu/nav_data.json
 
@@ -72,6 +82,9 @@ app.get(`/nav_data.json`, (req, res) => {
 });
 
 app.get(`${route}/`, (req, res) => {
+
+    console.log("SESSION", req.session);
+
     res.render(__dirname + '/views/index', {
         session: req.session
     });
@@ -126,6 +139,34 @@ app.get(`${route}/profiles`, async (req, res) => {
     res.render(__dirname + '/views/profiles', {
         session: req.session,
         profiles: profiles
+    });
+});
+
+app.get(`${route}/posts`, async (req, res) => {
+    
+    let posts = await db.getEndpoints.posts();
+
+    res.render(__dirname + '/views/posts', {
+        session: req.session,
+        posts: posts
+    });
+});
+
+app.get(`${route}/post-view`, async (req, res) => {
+    let id = req.query.post;
+
+    let post = await db.getEndpoints.post(id);
+
+    if(post.length == 0){
+        res.status(404).send('Post not found');
+        return;
+    }
+
+    post = post[0];
+
+    res.render(__dirname + '/views/view_post', {
+        session: req.session,
+        post: post
     });
 });
 

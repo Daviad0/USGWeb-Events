@@ -80,7 +80,26 @@
                     <div class="flex-apart">
                         <div>
                             <label>Position</label>
-                            <input type="text" placeholder="Position" name="position" onchange="editProfile('<%= p.username %>', 'position')" value="<%= p.position %>"/>
+                            <select name="position" onchange="editProfile('<%= p.username %>', 'position')">
+                                <option value="Unknown">Unknown</option>
+                                <option value="President" <% if(p.position == "President") { %> selected <% } %>>President</option>
+                                <option value="Vice-President" <% if(p.position == "Vice-President") { %> selected <% } %>>Vice-President</option>
+                                <option value="Treasurer" <% if(p.position == "Treasurer") { %> selected <% } %>>Treasurer</option>
+                                <option value="Secretary" <% if(p.position == "Secretary") { %> selected <% } %>>Secretary</option>
+                                <option value="College of Computing" <% if(p.position == "College of Computing") { %> selected <% } %>>College of Computing</option>
+                                <option value="College of Engineering" <% if(p.position == "College of Engineering") { %> selected <% } %>>College of Engineering</option>
+                                <option value="College of Science and Arts" <% if(p.position == "College of Science and Arts") { %> selected <% } %>>College of Science and Arts</option>
+                                <option value="College of Forestry" <% if(p.position == "College of Forestry") { %> selected <% } %>>College of Forestry</option>
+                                <option value="College of Business" <% if(p.position == "College of Business") { %> selected <% } %>>College of Business</option>
+                                <option value="1st-Year" <% if(p.position == "1st-Year") { %> selected <% } %>>1st-Year</option>
+                                <option value="2nd-Year" <% if(p.position == "2nd-Year") { %> selected <% } %>>2nd-Year</option>
+                                <option value="3rd-Year" <% if(p.position == "3rd-Year") { %> selected <% } %>>3rd-Year</option>
+                                <option value="4th-Year" <% if(p.position == "4th-Year") { %> selected <% } %>>4th-Year</option>
+                                <option value="At-Large" <% if(p.position == "At-Large") { %> selected <% } %>>At-Large</option>
+                                <option value="Residential" <% if(p.position == "Residential") { %> selected <% } %>>Residential</option>
+                                <option value="Associate Member" <% if(p.position == "Associate Member") { %> selected <% } %>>Associate Member</option>
+                                <option value="Student Assembly" <% if(p.position == "Student Assembly") { %> selected <% } %>>Student Assembly</option>
+                            </select>
                         </div>
                         <div class="flex-1">
                             <label>Committees</label>

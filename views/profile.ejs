@@ -14,10 +14,10 @@
     </div>
     <div class="flex-center">
         <div class="status-bar flex-center">
-            <div class="status bad left">Hidden</div>
-            <div class="status bad">Pending Edits</div>
-            <div class="status selected">Under Review</div>
-            <div class="status good right">OK</div>
+            <div class="status bad left <%= profile.status == 'hide' ? 'selected' : '' %>">Hidden</div>
+            <div class="status bad <%= profile.status == 'bad' ? 'selected' : '' %>">Pending Edits</div>
+            <div class="status <%= profile.status == 'review' ? 'selected' : '' %>">Under Review</div>
+            <div class="status good right <%= profile.status == 'ok' ? 'selected' : '' %>">OK</div>
         </div>
     </div>
 

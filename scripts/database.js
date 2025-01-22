@@ -78,6 +78,40 @@ const getEndpoints = {
                 resolve(results);
             });
         });
+    },
+    post: (id) => {
+        return new Promise((resolve, reject) => {
+            connection.query('SELECT * FROM usg_posts WHERE id = ?', [id], (error, results, fields) => {
+                if (error) {
+                    reject(error);
+                }
+
+                resolve(results);
+            });
+        });
+    },
+    posts: () => {
+        return new Promise((resolve, reject) => {
+            connection.query('SELECT * FROM usg_posts', (error, results, fields) => {
+                if (error) {
+                    reject(error);
+                }
+
+                resolve(results);
+            });
+        });
+    },
+    posts: (number) => {
+        // order by updated
+        return new Promise((resolve, reject) => {
+            connection.query('SELECT * FROM usg_posts ORDER BY updated DESC LIMIT ?', [number], (error, results, fields) => {
+                if (error) {
+                    reject(error);
+                }
+
+                resolve(results);
+            });
+        });
     }
 };
 
@@ -127,6 +161,38 @@ const postEndpoints = {
                 });
             }
         });
+    },
+    post: (id, title, author, html_content, draft) => {
+        return new Promise(async (resolve, reject) => {
+            // get the current post
+
+            let results = await getEndpoints.post(id);
+
+            if(results.length > 0){
+                title = title || results[0].title;
+                author = author || results[0].author;
+                html_content = html_content || results[0].html_content;
+                draft = draft || results[0].draft;
+
+                connection.query('UPDATE usg_posts SET title = ?, author = ?, html_content = ?, draft = ?, updated = ? WHERE id = ?', [title, author, html_content, draft, new Date(), id], (error, results, fields) => {
+                    if (error) {
+                        reject(error);
+                    }
+    
+                    resolve(results);
+                });
+            }else{
+                connection.query('INSERT INTO usg_posts (title, author, html_content, draft, updated) VALUES (?, ?, ?, ?, ?)', [title, author, html_content, draft, new Date()], (error, results, fields) => {
+                    if (error) {
+                        reject(error);
+                    }
+    
+                    resolve(results);
+                });
+            }
+            
+            
+        });
     }
 }
 
@@ -145,6 +211,17 @@ const removeEndpoints = {
     profile: (username) => {
         return new Promise((resolve, reject) => {
             connection.query('DELETE FROM usg_profiles WHERE username = ?', [username], (error, results, fields) => {
+                if (error) {
+                    reject(error);
+                }
+
+                resolve(results);
+            });
+        });
+    },
+    post: (id) => {
+        return new Promise((resolve, reject) => {
+            connection.query('DELETE FROM usg_posts WHERE id = ?', [id], (error, results, fields) => {
                 if (error) {
                     reject(error);
                 }

@@ -1,0 +1,61 @@
+<%- include('components/common') %>
+<%- include('components/header-public') %>
+
+<div class="content">
+    <br/>
+
+    <div class="flex-center">
+        <span class="huge">View Public Post</span>
+    </div>
+    
+    <br/>
+    <hr/>
+    <br/>
+
+    <div class="flex-center">
+        <div class="post">
+            <div class="flex-apart">
+                <div>
+                    <span class="large"><%= post.title %></span>
+                    <span class="small">Posted by <u><%= post.author %></u></span>
+                </div>
+                <span class="material-symbols-outlined large">forum</span>
+            </div>
+            
+        </div>
+        
+        
+    </div>
+    <br/>
+    <div class="flex-center">
+        <div>
+            <%- post.html_content %>
+        </div>
+
+    </div>
+    <br/>
+
+    <div class="flex-center">
+        <div class="post-blank flex-apart">
+            <div>
+                <span class="small updated">Updated on <%= post.updated %></span>
+            </div>
+            <div class="flex-center">
+                <button class="hover-button flex-center" id="share">
+                    <span class="material-symbols-outlined small">forward</span>
+                    <div class="sub">
+                        <span class="background small">Share</span>
+                    </div>
+                </button>
+                <button class="hover-button flex-center bg-error" id="report">
+                    <span class="material-symbols-outlined small">warning</span>
+                    <div class="sub">
+                        <span class="background small">Report</span>
+                    </div>
+                </button>
+            </div>
+        </div>
+    </div>
+    
+
+</div>
