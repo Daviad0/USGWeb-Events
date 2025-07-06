@@ -1,0 +1,14 @@
+{
+    "version": "1.0",
+    "contact": {
+        "email": "djreeves@mtu.edu",
+        "text": "Reach Out to Us",
+        "hours": "Monday to Friday, 9 AM - 5 PM"
+    },
+    "image_src": "Crest_edited.png",
+    "answers":{
+        "pronouns": "He / Him / His",
+        "name": "DJ Reeves",
+        "position": "Student IT Computer Technician"
+    }
+}

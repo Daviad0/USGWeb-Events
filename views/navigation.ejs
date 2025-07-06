@@ -54,7 +54,7 @@
     <div class="flex-center">
         <span class="medium"><i id="nav-version">Receiving Version from Website...</i></span>
     </div>
-    <div class="flex-center">
+    <div class="flex-center" style="gap:5px">
         <button class="hover-button flex-center" id="publish">
             <span class="material-symbols-outlined">save</span>
             <div class="sub">
@@ -363,7 +363,7 @@
         </div>
         <div>
             <label>Color</label>
-            <input onchange="editLink('${link.uuid}', 'link-color')" name="link-color" type="color" value="#ffffff" value="${link.special}" />
+            <input onchange="editLink('${link.uuid}', 'link-color')" name="link-color" type="color" value="${link.special}" />
         </div>
         <div class="flex-center" class="flex-1">
             <button class="hover-button flex-center" onclick="moveLink('${link.uuid}', 'up')">

@@ -1,0 +1,133 @@
+<style>
+    .position-element{
+        padding:40px 20px;
+        
+    }
+    
+    .position-element span{
+        display: block;
+        text-align: center;
+    }
+    
+    .position-element img{
+        width: 100%;
+        margin-top: 20px;
+        border-radius: 10px;
+    }
+    
+    .position-element button{
+        margin-top: 10px;
+    }
+    
+    .flex-center{
+        display:flex;
+        justify-content: center;
+        align-items:center;
+        flex-wrap: wrap;
+    }
+    
+    .flex-center .col1{
+        width: 20%;
+        min-width: 200px;
+        max-width: 300px;
+        
+    }
+    
+    .flex-center .col2{
+        width: 20px;
+    }
+    
+    .flex-center .col3{
+        width: 40%;
+        min-width: 400px;
+    }
+</style>
+
+<div class="position-element bg-primary flex-center" name="<%- profile.position %>">
+    <div class="col1">
+        <span style="font-size: 2.5em;font-weight:bold;" name="name"><%- profile.name %></span>
+        <span style="font-size: 1.5em;" name="position"><%- profile.position %></span>
+        <img src="<%- profile.photo %>" name="photo">
+    </div>
+    <div class="col2"></div>
+    <div class="col3">
+        <div name="description">
+            <span style="font-size: 2em"><strong>Pronouns</strong> <%- profile.pronouns %></span>
+            <span style="font-size: 2em"><strong>Hometown</strong> <%- profile.from %></span>
+            <span style="font-size: 2em"><strong>Quote</strong> <%- profile.quote %></span>
+            <span style="font-size: 2em"><strong>Other Organizations</strong> <%- profile.clubs %></span>
+            <span style="font-size: 2em"><strong>Major / Minor</strong> <%- profile.major %></span>
+            <span style="font-size: 2em"><strong>Committee</strong> <%- profile.committees %></span>
+
+        </div>
+        <div class="flex-center">
+            <button name="contact" class="button button-variant-secondary">Contact</button>
+        </div>
+        
+    </div>
+</div>
+
+<!-- <script>
+    let keyMappings = {
+        "pronouns": "Pronouns",
+        "from": "Hometown",
+        "quote": "Quote",
+        "clubs": "Other Organizations",
+        "major": "Major / Minor",
+        "committees": "Committees"
+    }
+    let position = "<%- position %>";
+
+    function tryFetch(){
+        try {
+            fetch(`/internal/api/profile?positions=${position}`).then(async (res) => {
+                let data = await res.json();
+                if (data.length == 0) {
+                    // document.querySelector("[name='president']").style.display = "none";
+                } else {
+                    let target = data[0];
+
+                    let element = document.querySelector(`[name='${position}']`);
+
+                    // if (target["photo"]) {
+                    //     element.querySelector("[name='photo']").src = target["photo"];
+                    // }
+                    if (target["name"]) {
+                        element.querySelector("[name='name']").innerHTML = target["name"];
+                    }
+                    if (target["data"]) {
+                        let JSONobject = JSON.parse(target["data"]);
+                        let descriptionElement = element.querySelector("[name='description']");
+                        Object.keys(JSONobject).forEach(key => {
+                            if(key == "photo"){
+                                element.querySelector("[name='photo']").src = JSONobject[key];
+                                return;
+                            }
+                            if(key == "contact"){
+                                let contactButton = element.querySelector("[name='contact']");
+                                contactButton.onclick = () => {
+                                    window.location.href = "mailto:" + JSONobject[key];
+                                }
+                                return;
+                            }
+                            
+                            let value = JSONobject[key];
+
+                            // if not in keyMappings, skip
+                            if(!keyMappings[key]){
+                                console.warn(`Key "${key}" not found in keyMappings, skipping.`);
+                                return;
+                            }
+
+                            descriptionElement.innerHTML += `<span style="font-size: 2em"><strong>${keyMappings[key]}:</strong> ${value}</span>`
+                        }
+                        );
+                    }
+                }
+            }
+            );
+        } catch (e) {
+        }
+    }
+    
+</script> -->

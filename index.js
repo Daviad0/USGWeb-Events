@@ -14,6 +14,8 @@ const fs = require('fs');
 const app = express();
 const route = '/internal';
 
+
+
 app.set('view engine', 'ejs');
 
 /**
@@ -37,7 +39,7 @@ const cas = new CASAuthentication({
         mail: "djreeves@mtu.edu",
         UID: "djreeves",
         memberOf: ["itss-ops-linux"],
-        access: 1,
+        access: 'admin', // either 'admin', 'member', or 'guest'
         title: "Student IT Computer Technician",
         private: true
     },
@@ -79,6 +81,24 @@ app.get(`/nav_data.json`, (req, res) => {
     let data = fs.readFileSync(__dirname + '/nav_data.json');
 
     res.send(data);
+});
+
+// get any file
+// specified by the path /uploaded/*
+app.get(`${route}/uploaded/*`, (req, res) => {
+
+    let useFileName = req.path.split('/').pop();
+
+    let filePath = __dirname + "/uploaded/" + useFileName;
+
+    console.log("Requested file:", filePath);
+
+    // check if the file exists
+    if(fs.existsSync(filePath)){
+        res.sendFile(filePath);
+    } else {
+        res.status(404).send('File not found');
+    }
 });
 
 app.get(`${route}/`, (req, res) => {
@@ -136,9 +156,24 @@ app.get(`${route}/profiles`, async (req, res) => {
     
     let profiles = await db.getEndpoints.profiles();
 
+    let members = await db.getEndpoints.members();
+    // get the member names...
+    let memberUsernames = members.map(m => {
+        return m.username;
+    })
+
+    // find the members that are not in the profiles
+    let membersWithoutProfiles = memberUsernames.filter(m => {
+        return !profiles.some(p => p.username === m);
+    });
+
+    console.log("Members:", members, "Profiles:", profiles, "Members without profiles:", membersWithoutProfiles);
+
     res.render(__dirname + '/views/profiles', {
         session: req.session,
-        profiles: profiles
+        profiles: profiles,
+        members: memberUsernames,
+        membersWithoutProfiles: membersWithoutProfiles
     });
 });
 
@@ -150,6 +185,46 @@ app.get(`${route}/posts`, async (req, res) => {
         session: req.session,
         posts: posts
     });
+});
+
+app.get(`${route}/template/:template*`, async (req, res) => {
+
+    // also add the query parameters as variables to the template
+    let query = req.query;
+    let useData = {
+        session: req.session
+    };
+    for(let key in query){
+        useData[key] = query[key];
+    }
+
+    let template = req.params.template;
+
+    console.log("Requested template:", template, "with query:", query);
+
+    if(template == 'member_profile.ejs'){
+        // add all of the profile details to the template data
+        let profile = await db.getEndpoints.profiles([query.position]);
+        // TODO: figure out something better than this
+        if(profile.length == 0){
+            res.status(404).send('Profile not found');
+            return;
+        }
+
+        profile = profile[0];
+
+        let profileData = JSON.parse(profile.data);
+        useData.profile = profile;
+        useData.profile = {
+            ...useData.profile,
+            ...profileData
+        };
+    }
+
+    console.log("Rendering template:", template, "with data:", useData);
+
+    
+    res.render(__dirname + `/views/templates/${template}`, useData);
 });
 
 app.get(`${route}/post-view`, async (req, res) => {
@@ -181,6 +256,6 @@ app.get(`${route}/nav_data.json`, (req, res) => {
 app.listen(3000, () => {
     console.log('Server is running on port 3000');
 
-    db.connect();
+    db.initializeTables();
 
 });

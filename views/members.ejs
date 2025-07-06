@@ -29,19 +29,19 @@ members = members.sort(function(a, b) {
 
     <div>
         <span class="medium">Add Members</span>
-        <div class="flex-center align-end">
+        <div class="flex-center">
             <div name="members">
                 <div style="display:none" id="add-member-template" class="flex-center">
                     <input type="text" placeholder="Username" />
                     <select>
-                        <option value="user">User</option>
+                        <option value="member">Member</option>
                         <option value="admin">Admin</option>
                     </select>
                 </div>
                 <div name="add-member" class="flex-center">
                     <input type="text" placeholder="Username" />
                     <select>
-                        <option value="user">User</option>
+                        <option value="member">Member</option>
                         <option value="admin">Admin</option>
                     </select>
                 </div>
@@ -62,8 +62,7 @@ members = members.sort(function(a, b) {
                 <span name="username" class="medium"><%= member.username %></span>
                 <span name="date-updated" class="small flex-1"><i>Last Updated <%= member.updated %></i></span>
                 <select name="access-level" onchange="updateMember('<%= member.username %>', this.value)">
-                    <option value="none" <% if(member.access == "none") { %>selected<% } %>>None (Remove)</option>
-                    <option value="user" <% if(member.access == "user") { %>selected<% } %>>User</option>
+                    <option value="member" <% if(member.access == "member") { %>selected<% } %>>Member</option>
                     <option value="admin" <% if(member.access == "admin") { %>selected<% } %>>Admin</option>
                 </select>
                 

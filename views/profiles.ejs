@@ -27,7 +27,7 @@
 
     <div>
         <span class="medium">Add Profile</span>
-        <div class="flex-center align-end">
+        <div class="flex-center">
             <div name="members">
                 <div name="add-member" class="flex-center">
                     <input type="text" placeholder="Username" id="username" />
@@ -40,8 +40,25 @@
     </div>
     <br/>
 
+    <% if(membersWithoutProfiles.length > 0) { %>
+        <div class="flex-center">
+            <div class="segment warning" style="width: 50%;margin:0">
+                <span class="small">Warning: The following users are USG members but do not have profiles:</span>
+                <div style="margin-top:10px">
+                    <% membersWithoutProfiles.forEach(member => { %>
+                        <span class="small flex-center"><%= member %> <button style="margin-left:5px" class="small" onclick="addProfileForUser('<%= member %>')">Add Profile</button></span>
+                    <% }) %>
+                </div>
+                    
+            </div>
+        </div>
+        <br/>
+    <% } %>
+
     <div>
         <% profiles.forEach(p => { %>
+
+            
 
             <div class="flex-center">
                 <div class="segment member" data-username="<%= p.username %>">
@@ -103,18 +120,26 @@
                         </div>
                         <div class="flex-1">
                             <label>Committees</label>
-                            <input class="expand-x" type="text" placeholder="Position" name="committees" onchange="editCommittees('<%= p.username %>')"/>
+                            <input class="expand-x" type="text" placeholder="Position" name="committees" onchange="editDescription('committees','<%= p.username %>')"/>
                         </div>
                     </div>
                     <div class="flex-apart">
                         <div class="flex-1">
                             <label>Photo Link</label>
-                            <input class="expand-x" type="text" placeholder="Photo URL (Leave Blank for Default)" value="<%= p.photo %>" name="photo" onchange="editProfile('<%= p.username %>', 'photo')"/>
+                            <input class="expand-x" type="text" placeholder="Photo URL (Leave Blank for Default)" name="photo" onchange="editDescription('photo','<%= p.username %>')"/>
                         </div>
                     </div>
-                    <input class="no-display" type="text" name="description" value="<%= p.description %>"/>
+                    <% if(!members.includes(p.username)) { %>
+                        <div class="segment warning">
+                            <span class="small">Warning: This user is <b>NOT</b> an Undergraduate Student Government member... Please remove their profile if appropriate.</span>
+                        </div>
+                    <% } %>
+                    <input class="no-display" type="text" name="description" value="<%= p.data %>"/>
                 </div>
             </div>
+
+            <!--Check if profile name is in member names-->
+
             
 
         <% }) %>
@@ -149,6 +174,11 @@
 </div>
 
 <script>
+    function addProfileForUser(username){
+        document.getElementById('username').value = username;
+        addProfile();
+    }
+
     function addProfile(){
 
         let usernames = document.getElementsByName('profile-username');
@@ -166,10 +196,15 @@
             return;
         }
 
-        
+        let contactObj = {
+            email: document.getElementById('username').value + '@mtu.edu',
+            hours: "",
+            text: "Contact Me"
+        };
+
         post('/internal/api/profile', {
             username: document.getElementById('username').value,
-            contact: document.getElementById('username').value + "@mtu.edu"
+            contact: JSON.stringify(contactObj),
         }).then(res => {
             window.location.reload();
         }).catch(err => {
@@ -189,7 +224,6 @@
 
         updateCounts();
     }
-
     function updateCounts(){
         let counts = {
             hide: 0,
@@ -229,8 +263,8 @@
 
     }
 
-    function editCommittees(username){
-        let committees = document.querySelector(`.member[data-username="${username}"] input[name="committees"]`).value;
+    function editDescription(prop, username){
+        let propValue = document.querySelector(`.member[data-username="${username}"] input[name="${prop}"]`).value;
         let description = document.querySelector(`.member[data-username="${username}"] input[name="description"]`).value;
 
         if(!description){
@@ -239,28 +273,29 @@
             description = JSON.parse(description);
         }
 
-        description.committees = committees;
+        description[prop] = propValue;
 
         document.querySelector(`.member[data-username="${username}"] input[name="description"]`).value = JSON.stringify(description);
 
         post('/internal/api/profile', {
             username: username,
-            description: JSON.stringify(description)
+            data: JSON.stringify(description)
         }).then(res => {
-            document.querySelector(`.member[data-username="${username}"] input[name="description"]`).value = JSON.stringify({committees: committees});
+            // document.querySelector(`.member[data-username="${username}"] input[name="description"]`).value = JSON.stringify({committees: committees});
         }).catch(err => {
-            alert("Error updating committees");
+            alert(`Error updating ${prop}`);
         });
     }
 
-    function parseCommittees(){
+    function parseDescriptions(){
         let members = document.querySelectorAll('.member');
 
         Array.from(members).forEach(m => {
             let committees = m.querySelector('input[name="committees"]');
             let description = m.querySelector('input[name="description"]');
+            let photo = m.querySelector('input[name="photo"]');
 
-            if(!committees || !description){
+            if(!committees || !description || !photo){
                 return;
             }
 
@@ -275,11 +310,17 @@
             }else{
                 committees.value = "";
             }
+
+            if(description.photo){
+                photo.value = description.photo;
+            }else{
+                photo.value = "";
+            }
         });
     }
 
     updateCounts();
-    parseCommittees();
+    parseDescriptions();
 
 
     function editProfile(username, name){

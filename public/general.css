@@ -18,6 +18,7 @@
     --usg-segment: #d3d3d3;
     --usg-error: #eb2c49;
     --usg-success: #18c471;
+    --usg-warning: #e09f43;
 }
 
 *{
@@ -53,6 +54,10 @@ body{
     color: var(--usg-secondary);
 
     z-index: 1000;
+
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
 .heading img{
@@ -63,11 +68,13 @@ body{
 }
 
 .heading .text-content{
-    position: fixed;
-    top: 20px;
-    left: 120px;
     font-size: 1.2em;
+    display: flex;
+    align-items: center;
+    margin-left: 120px;
+    gap: 5px;
 }
+
 
 .heading .buttons{
     position: fixed;
@@ -91,7 +98,6 @@ body{
 }
 
 button{
-    margin: 5px;
     padding: 5px 10px;
     background-color: var(--usg-secondary);
     color: var(--usg-background);
@@ -288,6 +294,14 @@ button:disabled{
 
 .segment.member input[name="name"]{
     margin-left: 10px;
+}
+
+.segment.warning {
+    width: 100%;
+    background-color: var(--usg-warning);
+    padding: 10px;
+    border-radius: 8px;
+    margin-top: 10px;
 }
 
 input[type="text"], input[type="password"], input[type="email"], input[type="number"], input[type="date"], input[type="time"], input[type="file"], input[type="color"], select, textarea{

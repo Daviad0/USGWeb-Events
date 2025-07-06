@@ -1,5 +1,23 @@
 <div class="heading">
     <img src="Crest_edited.png" alt="Crest" class="crest">
+    <div class="text-content">
+        <% if (session.user_info && session.user_info.access == 'admin') { %>
+            <button onclick="window.location.href = 'profile'">
+                <span class="medium">My Profile</span>
+            </button>
+            <button onclick="window.location.href = 'profiles'">
+                <span class="medium">All Profiles</span>
+            </button>
+            <button onclick="window.location.href = 'access'">
+                <span class="medium">Members</span>
+            </button>
+        <% } %>
+        <% if (session.user_info && (session.user_info.access == 'admin' || session.user_info.access == 'member')) { %>
+            <button onclick="window.location.href = 'navigation'">
+                <span class="medium">Navigation Menu Manage</span>
+            </button>
+        <% } %>
+    </div>
     <div class="buttons">
         <% if(!session || !session.user) { %>
             <button class="hover-button" onclick="window.location.href = '/internal/authenticate'">
@@ -32,3 +50,12 @@
         <% } %>
     </div>
 </div>
+
+<script>
+    function testLogin(){
+        // We want to get JSON about the login request... 
+        // This is for test CAS only...
+
+        
+    }
+</script>

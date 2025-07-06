@@ -1,6 +1,27 @@
 <%- include('components/common') %>
 <%- include('components/header', { session: session }) %>
 
+<style>
+    .menu{
+        overflow-y: hidden;
+        max-height: 0px;
+        padding: 0px 20px;
+        transition: all .5s ease-in-out;
+    }
+    
+    .menu.open{
+        max-height: 2000px;
+        padding: 20px 20px;
+    }
+
+    .iframe_container{
+        width: 100%;
+        /* remove border and scroll bars*/
+        border: 2px solid black;
+        border-radius: 8px;
+        height: 400px;
+    }
+</style>
 
 <div class="content">
     <br/>
@@ -49,7 +70,7 @@
                     <div class="flex-2 left-col">
                         <div>
                             <label class="small">Contact Email</label>
-                            <input type="text" class="medium" placeholder="Email" name="contact" value="<%= profile.contact %>" onchange="editProfile('contact')"/>
+                            <input type="text" class="medium" placeholder="Email" name="d_contact" onchange="editDescription('contact')"/>
                         </div>
                         <hr/>
                         <div class="flex-center">
@@ -76,18 +97,31 @@
                             <label>Quote</label>
                             <textarea type="text" placeholder="Lalal" name="d_quote" rows="2" onchange="editDescription('quote')"></textarea>
                         </div>
-                        <input type="text" placeholder="Description" value="<%= profile.description %>" name="description" class="no-display"/>
+                        <input type="text" placeholder="Description" value="<%= profile.data %>" name="description" class="no-display"/>
 
                     </div>
                     <div class="flex-1">
                         <span class="medium" id="name"><%= profile.name %></span>
                         <span class="small" id="position"><%= profile.position %></span>
                         <div class="flex-center">
-                            <img class="photo" src="<%= profile.photo %>" onerror="this.src='https://cdn1.site-media.eu/images/0/11115977/Drawing.png'" />
+                            <img class="photo" name="d_photo_preview" onerror="this.src='https://cdn1.site-media.eu/images/0/11115977/Drawing.png'" />
                         </div>
                         <div>
                             <label>Photo Link</label>
-                            <input type="text" placeholder="Photo" value="<%= profile.photo %>" name="photo" onchange="editProfile('photo')"/>
+                            <input type="text" placeholder="Photo" value="<%= profile.photo %>" name="d_photo" onchange="editDescription('photo')"/>
+                        </div>
+                        <!--
+                        Upload Photo
+                        -->
+                        <div>
+                            <label>Upload Photo</label>
+                            <div class="flex-center">
+                                <input type="file" name="photo" accept="image/*"/>
+                                <button class="flex-center" onclick="uploadPhotoAndGetLink()">
+                                    <span class="background small">Upload</span>
+                                </button>
+                            </div>
+                            
                         </div>
                     </div>
                 </div>
@@ -107,7 +141,17 @@
                                 <span class="background small">Publish</span>
                             </div>
                         </button>
+                        <button class="hover-button flex-center" id="preview" onclick="togglePreview()">
+                            <span class="material-symbols-outlined small">visibility</span>
+                            <div class="sub">
+                                <span class="background small">Preview</span>
+                            </div>
+                        </button>
                     </div>
+                </div>
+                <div id="show_preview" class="menu" onclick="togglePreview()">
+                    
+
                 </div>
             </div>
         </div>
@@ -141,8 +185,12 @@
 </div>
 
 <script>
-    let parseKeys = ['pronouns', 'from', 'committees', 'major', 'clubs', 'quote'];
+    let parseKeys = ['pronouns', 'from', 'committees', 'major', 'clubs', 'quote', 'photo', 'contact'];
     let descriptionData = {};
+
+    let profileData = `
+    <%= JSON.stringify(profile.data) %>
+    `;
 
     let editsToSave = {
 
@@ -162,6 +210,9 @@
             if(element){
                 element.value = value[key] ? value[key] : '';
                 descriptionData[key] = value[key] ? value[key] : '';
+                if(key == 'photo'){
+                    document.querySelector('img[name="d_photo_preview"]').src = value[key] ? value[key] : '';
+                }
             }
         }
     }
@@ -176,7 +227,11 @@
 
         if(!value) return;
 
-        editsToSave[name] = value;
+        if(name == 'name'){
+            editsToSave[name] = value;
+        }
+
+        
 
         if(name == 'photo'){
             document.querySelector('.photo').src = value;   
@@ -193,7 +248,7 @@
         if(!value) return;
 
         descriptionData[name] = value;
-        editsToSave['description'] = JSON.stringify(descriptionData);
+        editsToSave['data'] = JSON.stringify(descriptionData);
 
         window.onbeforeunload = function() {
             return true;
@@ -212,6 +267,44 @@
         });
     }
 
+    function uploadPhotoAndGetLink(){
+        let fileInput = document.querySelector('input[name="photo"]');
+        if(!fileInput.files || fileInput.files.length === 0) {
+            alert('Please select a photo to upload.');
+            return;
+        }
+
+        let formData = new FormData();
+
+        // rename the file to username_photo.jpg
+        let fileType = fileInput.files[0].type.split('/')[1]; // Get the file type (e.g., jpg, png)
+
+        formData.append('image', fileInput.files[0]);
+        formData.append('name', document.querySelector('input[name="username"]').value + '_photo' + "." + fileType);
+        
+
+        fetch('/internal/api/profile/image', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.text())
+        .then(data => {
+            // data contains the path to the uploaded photo
+            let path = "/internal" + data; // Adjust the path as needed
+            // Update the photo input with the new path
+            document.querySelector('input[name="d_photo"]').value = path;
+            // Update the photo preview
+            document.querySelector('img[name="d_photo_preview"]').src = path;
+
+            editDescription('photo');
+        }).catch(error => {
+            // Handle any errors that occurred during the fetch
+            console.error('Error:', error);
+            alert('Error uploading photo.');
+        });
+
+    }
+
     document.querySelector('#save').addEventListener('click', saveEdits);
 
     document.querySelector('input[name="name"]').addEventListener('keyup', updatePreviews);
@@ -221,4 +314,29 @@
 
 
 
+</script>
+
+<script>
+    function togglePreview(){
+        let preview = document.querySelector('#show_preview');
+        if(preview.classList.contains('open')){
+            preview.classList.remove('open');
+        }else{
+            // add to preview
+            fetch("/internal/template/member_profile.ejs?position=treasurer").then(res => res.text()).then(html => {
+                preview.innerHTML = html;
+                // preview.querySelector('iframe').onload = function() {
+                //     resizeIframe(preview.querySelector('iframe'));
+                // };
+                // preview.querySelector('iframe').src = '/internal/api/profile/preview';
+                preview.classList.add('open');
+            });
+            
+        }
+    }
+
+    // https://stackoverflow.com/questions/9975810/make-iframe-automatically-adjust-height-according-to-the-contents-without-using
+    function resizeIframe(obj) {
+        obj.style.height = obj.contentWindow.document.documentElement.scrollHeight + 'px';
+    }
 </script>
