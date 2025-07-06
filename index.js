@@ -204,21 +204,27 @@ app.get(`${route}/template/:template*`, async (req, res) => {
 
     if(template == 'member_profile.ejs'){
         // add all of the profile details to the template data
-        let profile = await db.getEndpoints.profiles([query.position]);
+        let profiles = await db.getEndpoints.profiles([query.position]);
         // TODO: figure out something better than this
-        if(profile.length == 0){
+        if(profiles.length == 0){
             res.status(404).send('Profile not found');
             return;
         }
 
-        profile = profile[0];
+        useData.profiles = [];
 
-        let profileData = JSON.parse(profile.data);
-        useData.profile = profile;
-        useData.profile = {
-            ...useData.profile,
-            ...profileData
-        };
+        for(let i = 0; i < profiles.length; i++){
+            let profile = profiles[i];
+            let profileData = JSON.parse(profile.data);
+            if(i % 2 == 0){
+                profileData.alternate = true;
+            }
+            useData.profiles.push({
+                ...profile,
+                ...profileData
+            });
+        }
+
     }
 
     console.log("Rendering template:", template, "with data:", useData);

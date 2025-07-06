@@ -323,7 +323,9 @@
             preview.classList.remove('open');
         }else{
             // add to preview
-            fetch("/internal/template/member_profile.ejs?position=treasurer").then(res => res.text()).then(html => {
+            let position = document.querySelector('input[name="position"]').value;
+            position = position.toLowerCase();
+            fetch("/internal/template/member_profile.ejs?position=" + position).then(res => res.text()).then(html => {
                 preview.innerHTML = html;
                 // preview.querySelector('iframe').onload = function() {
                 //     resizeIframe(preview.querySelector('iframe'));
