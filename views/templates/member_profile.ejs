@@ -27,9 +27,9 @@
     }
     
     .flex-center .col1{
-        width: 20%;
+        width: 30%;
         min-width: 200px;
-        max-width: 300px;
+        max-width: 350px;
         
     }
     
@@ -41,12 +41,22 @@
         width: 40%;
         min-width: 400px;
     }
+
+    .bg-profile-primary {
+        background-color: #ffcd00;
+        color: black;
+    }
+
+    .bg-profile-secondary {
+        background-color: #000000;
+        color: white;
+    }
 </style>
 
 <% profiles.forEach(profile => { %>
     <% 
-    let bgClass = ["bg-primary", "bg-secondary"]; 
-    let bgColor = ["black", "white"];
+    let bgClass = ["#ffcd00", "white"]; 
+    let bgColor = ["black", "black"];
     let buttonClass = ["button-variant-secondary", "button-variant-primary"];
     let bgIndex = 0;
     if(profile.alternate && profile.alternate == true) { 
@@ -63,9 +73,9 @@
     buttonClass = buttonClass[bgIndex % buttonClass.length];
     %>
 
-    <div class="position-element <%- bgClass %> flex-center" style="color:<%- bgColor %>" name="<%- profile.position %>">
+    <div class="position-element flex-center" style="background-color:<%- bgClass %>;color:<%- bgColor %>" name="<%- profile.position %>">
         <div class="col1">
-            <span style="font-size: 2.5em;font-weight:bold;" name="name"><%- profile.name %></span>
+            <span style="font-size: 2.5em;font-weight:bold;margin-bottom: 4px;" name="name"><%- profile.name %></span>
             <span style="font-size: 1.5em;" name="position"><%- profile.position %></span>
             <img src="<%- profile.photo %>" name="photo">
         </div>
