@@ -72,14 +72,55 @@ function initializeTables() {
             console.log('usg_profiles table created or already exists.');
         }
     });
+
+    // initialize the configuration table with default values
+    // key: 'permanent_accounts'
+    db.run(`INSERT OR IGNORE INTO usg_configuration (key, name, description, value, last_updated) VALUES (?, ?, ?, ?, ?)`, 
+        ['permanent_accounts', 
+            'Permanent Accounts', 
+            'A list of accounts that are always considered admins', 
+            'usg,usg-president,usg-vice-president,usg-secretary,usg-treasurer',
+            new Date()], 
+        (err) => {
+            if (err) {
+                console.error('Error inserting into usg_configuration table: ' + err.message);
+            } else {
+                console.log('Default configuration inserted into usg_configuration table.');
+            }
+        });
 }
 
 const getEndpoints = {
+    config: (key) => { // actually returns a single configuration value or null
+        return new Promise((resolve, reject) => {
+            db.get('SELECT * FROM usg_configuration WHERE key = ?', [key], (error, results) => {
+                if (error) {
+                    reject(error);
+                }
+
+                if(!results) {
+                    resolve(null);
+                }
+                resolve(results);
+            });
+        });
+    },
     members: () => {
         return new Promise((resolve, reject) => {
             // where access is 'member' or 'admin'
             // let allowedRoles = ['member', 'admin']
             db.all('SELECT * FROM usg_members', [], (error, results) => {
+                if (error) {
+                    reject(error);
+                }
+
+                resolve(results);
+            });
+        });
+    },
+    member: (username) => {
+        return new Promise((resolve, reject) => {
+            db.get('SELECT * FROM usg_members WHERE username = ?', [username], (error, results) => {
                 if (error) {
                     reject(error);
                 }

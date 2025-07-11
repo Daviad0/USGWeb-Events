@@ -56,6 +56,19 @@ members = members.sort(function(a, b) {
     </div>
     <br/>
 
+    <% permanent_accounts.forEach(function(username) { %>
+        <div name="access" data-username="<%= username %>" class="flex-center">
+            <div class="segment member flex-apart">
+                <span name="username" class="medium"><%= username %></span>
+                <span name="date-updated" class="small flex-1"><i>Permanent</i></span>
+                <select name="access-level" disabled>
+                    <option value="member">Member</option>
+                    <option value="admin" selected>Admin</option>
+                </select> 
+            </div>
+        </div>
+    <% }); %>
+
     <% members.forEach(function(member) { %>
        <div name="access" data-username="<%= member.username %>" class="flex-center">
             <div class="segment member flex-apart">

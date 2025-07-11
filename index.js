@@ -27,10 +27,10 @@ app.set('view engine', 'ejs');
 
 const cas = new CASAuthentication({
     cas_url         : 'https://sso.mtu.edu/cas',
-    service_url     : 'https://usg.mtu.edu/internal/authenticate',
+    service_url     : 'https://usg.mtu.edu/',
     cas_version     : '3.0',
     renew           : false,
-    is_dev_mode     : true,
+    is_dev_mode     : false,
     dev_mode_user   : 'djreeves',
     dev_mode_info   : {
         displayName: "David Reeves",
@@ -39,9 +39,6 @@ const cas = new CASAuthentication({
         mail: "djreeves@mtu.edu",
         UID: "djreeves",
         memberOf: ["itss-ops-linux"],
-        access: 'admin', // either 'admin', 'member', or 'guest'
-        title: "Student IT Computer Technician",
-        private: true
     },
     session_name    : 'user',
     session_info    : 'user_info',
@@ -63,7 +60,56 @@ app.use(session({
 // use api routes
 app.use(`${route}/api`, api);
 
-app.get(`${route}/authenticate`, cas.bounce, (req, res) => {
+app.get(`${route}/session`, (req, res) => {
+    // return an object with the session data
+    let obj = {
+        user: req.session.user,
+        user_info: req.session.user_info
+    };
+
+    res.json(obj);
+});
+
+let permanentAdmins
+
+app.get(`${route}/authenticate`, cas.bounce, async (req, res) => {
+
+    let username = req.session.user;
+    console.log("Authenticated user:", username);
+
+    let permanent_accounts_string = await db.getEndpoints.config('permanent_accounts');
+    let permanent_accounts = [];
+    if(permanent_accounts_string != null && permanent_accounts_string.value){
+        permanent_accounts = permanent_accounts_string.value.split(',');
+    }
+
+    let memberObj = null;
+    if(permanent_accounts.includes(username)){
+        // this user is a permanent admin
+        memberObj = {
+            username: username,
+            access: 'admin',
+        };
+    }else{
+        memberObj = await db.getEndpoints.member(username);
+    }
+
+    if(!memberObj){
+        console.log("User not found in database, treat as guest");
+        memberObj = {
+            username: username,
+            access: 'guest'
+        };
+    }
+
+    let user_info = req.session.user_info;
+    req.session.user_info = {
+        ...memberObj,
+        ...user_info
+    };
+
+    // usg user is automatically an admin
+
     res.redirect('/internal');
 });
 
@@ -115,10 +161,17 @@ app.get(`${route}/access`, async (req, res) => {
     let members = await db.getEndpoints.members();
 
     console.log(members);
+    let permanent_accounts_string = await db.getEndpoints.config('permanent_accounts');
+    let permanent_accounts = [];
+    if(permanent_accounts_string != null && permanent_accounts_string.value){
+        console.log("Permanent accounts string:", permanent_accounts_string.value);
+        permanent_accounts = permanent_accounts_string.value.split(',');
+    }
 
     res.render(__dirname + '/views/members', {
         session: req.session,
-        members: members
+        members: members,
+        permanent_accounts: permanent_accounts
     });
 });
 
@@ -265,3 +318,4 @@ app.listen(3000, () => {
     db.initializeTables();
 
 });
+
