@@ -4,6 +4,33 @@ const fs = require('fs');
 const db = require('./scripts/database');
 const fileUpload = require('express-fileupload');
 
+// expecting can be 'admin', 'member', 'logged_out' or 'any'
+function checkAuthentication(sessionInfo, expecting) {
+    if (!sessionInfo || !sessionInfo.access) {
+        return expecting === 'logged_out';
+    }
+
+    switch (expecting) {
+        case 'admin':
+            return sessionInfo.access === 'admin';
+        case 'member':
+            return sessionInfo.access === 'member' || sessionInfo.access === 'admin';
+        case 'any':
+            return true;
+        default:
+            return false;
+    }
+}
+
+router.get("/authorized", async(req, res) => {
+    let access = req.session.user_info.access;
+    if(checkAuthentication(req.session.user_info, 'admin')){
+        res.status(200).send('User is authorized');
+    } else {
+        res.status(403).send('User is not authorized');
+    }
+})
+
 /**
  * POST - /api/member
  *  - username: string
@@ -21,7 +48,7 @@ router.post('/member', async (req, res) => {
 
     console.log(username, access);
 
-    if(['none', 'member', 'admin'].indexOf(access) == -1){
+    if(['guest', 'member', 'admin'].indexOf(access) == -1){
         res.status(400).send('Invalid access level');
         return;
     }
@@ -53,6 +80,7 @@ router.post('/member', async (req, res) => {
  *  - positions: string, CSV
  * 
  * Gets the profile information for a given position
+ * Should only be used for drafts
  */
 
 router.get('/profile', async (req, res) => {
@@ -63,11 +91,11 @@ router.get('/profile', async (req, res) => {
         position = position.split(',');
     }
 
-    let allProfiles = await db.getEndpoints.profiles();
+    let allProfiles = await db.getEndpoints.profiles([], false);
     console.log("All profiles: ", allProfiles);
 
     try {
-        let profile = await db.getEndpoints.profiles(position);
+        let profile = await db.getEndpoints.profiles(position, false);
         res.status(200).send(profile);
     } catch (error) {
         res.status(500).send('Error: ' + error);
@@ -94,6 +122,25 @@ router.post('/profile', async (req, res) => {
     let data = req.body.data;
     let deleteProfile = req.body.delete;
 
+    let sessionInfo = req.session.user_info;
+    // can we post directly to the real profiles?
+    let canPostDirectlyToReal = checkAuthentication(sessionInfo, 'admin');
+
+    // get the profile beforehand, see if we are changing the status
+    // if we aren't, check if this is a NON-ADMIN user
+    // then, make the status awaiting changes so it can be reviewed
+    let profile = await db.getEndpoints.profile(username);
+    if(
+        profile &&
+        profile.status &&
+        profile.status == status &&
+        !canPostDirectlyToReal
+    ){
+        status = "review";
+    }else if((!profile || !profile.status) && !canPostDirectlyToReal){ // if not already a profile or status is not set, set it to review
+        status = "review";
+    }
+
     console.log(username, name, position, status, data, deleteProfile);
 
     if(deleteProfile){
@@ -106,7 +153,12 @@ router.post('/profile', async (req, res) => {
         return;
     }
     try {
-        await db.postEndpoints.profile(username, name, position, status, data);
+        // we are working with a draft
+        await db.postEndpoints.profile(username, name, position, status, data, true);
+        if(canPostDirectlyToReal){
+            // post to the real table as well!
+            await db.postEndpoints.profile(username, name, position, status, data, false);
+        }
         res.status(200).send('Success');
     } catch (error) {
         res.status(500).send('Error: ' + error);

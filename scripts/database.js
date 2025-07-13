@@ -73,6 +73,24 @@ function initializeTables() {
         }
     });
 
+    // create draft profiles table
+    // includes username, name, position, status, data, last_updated
+    // duplicates the usg_profiles table but is used for draft profiles
+    db.run(`CREATE TABLE IF NOT EXISTS usg_profiles_draft (
+        username TEXT PRIMARY KEY,
+        name TEXT,
+        position TEXT,
+        status TEXT,
+        data TEXT,
+        last_updated DATETIME
+    )`, (err) => {
+        if (err) {
+            console.error('Error creating usg_profiles_draft table: ' + err.message);
+        } else {
+            console.log('usg_profiles_draft table created or already exists.');
+        }
+    });
+
     // initialize the configuration table with default values
     // key: 'permanent_accounts'
     db.run(`INSERT OR IGNORE INTO usg_configuration (key, name, description, value, last_updated) VALUES (?, ?, ?, ?, ?)`, 
@@ -129,11 +147,12 @@ const getEndpoints = {
             });
         });
     },
-    profiles: (usePositions) => {
-        if(usePositions){
+    profiles: (usePositions, draft) => {
+        let table = draft ? 'usg_profiles_draft' : 'usg_profiles'; 
+        if(usePositions && usePositions.length > 0){
             console.log("Using positions: ", usePositions);
             return new Promise((resolve, reject) => {
-                db.all('SELECT * FROM usg_profiles WHERE LOWER(position) IN (?)', [usePositions.join(",")],  (error, results) => {
+                db.all(`SELECT * FROM ${table} WHERE LOWER(position) IN (?)`, [usePositions.join(",")],  (error, results) => {
                     if (error) {
                         reject(error);
                     }
@@ -143,7 +162,7 @@ const getEndpoints = {
         }
 
         return new Promise((resolve, reject) => {
-            db.all('SELECT * FROM usg_profiles', [], (error, results) => {
+            db.all(`SELECT * FROM ${table}`, [], (error, results) => {
                 if (error) {
                     reject(error);
                 }
@@ -152,9 +171,10 @@ const getEndpoints = {
             });
         });
     },
-    profile: (username) => {
+    profile: (username, draft) => {
         return new Promise((resolve, reject) => {
-            db.all('SELECT * FROM usg_profiles WHERE username = ?', [username], (error, results) => {
+            let table = draft ? 'usg_profiles_draft' : 'usg_profiles';
+            db.all(`SELECT * FROM ${table} WHERE username = ?`, [username], (error, results) => {
                 if (error) {
                     reject(error);
                 }
@@ -213,8 +233,8 @@ const postEndpoints = {
             });
         });
     },
-    profile: (username, name, position, status, data) => {
-
+    profile: (username, name, position, status, data, draft) => {
+        let table = draft ? 'usg_profiles_draft' : 'usg_profiles';
         
         return new Promise(async (resolve, reject) => {
             // get the current profile
@@ -227,7 +247,7 @@ const postEndpoints = {
                 data = data || results[0].data;
                 last_updated = new Date();
 
-                db.run('UPDATE usg_profiles SET name = ?, position = ?, status = ?, data = ?, last_updated = ? WHERE username = ?', [name, position, status, data, last_updated, username], (error) => {
+                db.run(`UPDATE ${table} SET name = ?, position = ?, status = ?, data = ?, last_updated = ? WHERE username = ?`, [name, position, status, data, last_updated, username], (error) => {
                     if (error) {
                         reject(error);
                     }
@@ -235,7 +255,7 @@ const postEndpoints = {
                 });
 
             }else{
-                db.run('INSERT INTO usg_profiles (username, name, position, status, data, last_updated) VALUES (?, ?, ?, ?, ?, ?)', [username, name, position, status, data, new Date()], (error) => {
+                db.run(`INSERT INTO ${table} (username, name, position, status, data, last_updated) VALUES (?, ?, ?, ?, ?, ?)`, [username, name, position, status, data, new Date()], (error) => {
                     if (error) {
                         reject(error);
                     }
@@ -244,6 +264,7 @@ const postEndpoints = {
             }
         });
     },
+
     // post: (id, title, author, html_content, draft) => {
     //     return new Promise(async (resolve, reject) => {
     //         // get the current post
@@ -289,9 +310,10 @@ const removeEndpoints = {
             });
         });
     },
-    profile: (username) => {
+    profile: (username, draft) => {
+        let table = draft ? 'usg_profiles_draft' : 'usg_profiles';
         return new Promise((resolve, reject) => {
-            db.run('DELETE FROM usg_profiles WHERE username = ?', [username], (error) => {
+            db.run(`DELETE FROM ${table} WHERE username = ?`, [username], (error) => {
                 if (error) {
                     reject(error);
                 }

@@ -30,14 +30,14 @@ const cas = new CASAuthentication({
     service_url     : 'https://usg.mtu.edu/',
     cas_version     : '3.0',
     renew           : false,
-    is_dev_mode     : false,
-    dev_mode_user   : 'djreeves',
+    is_dev_mode     : true,
+    dev_mode_user   : 'usg',
     dev_mode_info   : {
         displayName: "David Reeves",
         givenName: "David",
         sn: "Reeves",
         mail: "djreeves@mtu.edu",
-        UID: "djreeves",
+        UID: "usg",
         memberOf: ["itss-ops-linux"],
     },
     session_name    : 'user',
@@ -60,21 +60,7 @@ app.use(session({
 // use api routes
 app.use(`${route}/api`, api);
 
-app.get(`${route}/session`, (req, res) => {
-    // return an object with the session data
-    let obj = {
-        user: req.session.user,
-        user_info: req.session.user_info
-    };
-
-    res.json(obj);
-});
-
-app.get(`${route}/authenticate`, cas.bounce, async (req, res) => {
-
-    let username = req.session.user;
-    console.log("Authenticated user:", username);
-
+async function getAccessFromDb(username) {
     let permanent_accounts_string = await db.getEndpoints.config('permanent_accounts');
     let permanent_accounts = [];
     if(permanent_accounts_string != null && permanent_accounts_string.value){
@@ -100,15 +86,94 @@ app.get(`${route}/authenticate`, cas.bounce, async (req, res) => {
         };
     }
 
+    return memberObj.access;
+}
+
+// Middleware to refresh session access
+// read from the database each time
+function refreshSession(req, res, next) {
+    // refresh the session access
+    let username = req.session.user;
+    if(username != null && username != undefined && username != ''){
+        getAccessFromDb(username).then(access => {
+            req.session.user_info.access = access;
+            next();
+        });
+    }
+    else {
+        // no user, just continue
+        next();
+    }
+}
+
+// expecting can be 'admin', 'member', 'logged_out' or 'any'
+function checkAuthentication(sessionInfo, expecting) {
+    if (!sessionInfo || !sessionInfo.access) {
+        return expecting === 'logged_out';
+    }
+
+    switch (expecting) {
+        case 'admin':
+            return sessionInfo.access === 'admin';
+        case 'member':
+            return sessionInfo.access === 'member' || sessionInfo.access === 'admin';
+        case 'any':
+            return true;
+        default:
+            return false;
+    }
+}
+
+app.get(`${route}/session`, refreshSession, (req, res) => {
+    // return an object with the session data
+    let obj = {
+        user: req.session.user,
+        user_info: req.session.user_info
+    };
+
+    res.json(obj);
+});
+
+app.get(`${route}/authenticate`, refreshSession, cas.bounce, async (req, res) => {
+
+    let username = req.session.user;
+    console.log("Authenticated user:", username);
+
+    // let permanent_accounts_string = await db.getEndpoints.config('permanent_accounts');
+    // let permanent_accounts = [];
+    // if(permanent_accounts_string != null && permanent_accounts_string.value){
+    //     permanent_accounts = permanent_accounts_string.value.split(',');
+    // }
+
+    // let memberObj = null;
+    // if(permanent_accounts.includes(username)){
+    //     // this user is a permanent admin
+    //     memberObj = {
+    //         username: username,
+    //         access: 'admin',
+    //     };
+    // }else{
+    //     memberObj = await db.getEndpoints.member(username);
+    // }
+
+    // if(!memberObj){
+    //     console.log("User not found in database, treat as guest");
+    //     memberObj = {
+    //         username: username,
+    //         access: 'guest'
+    //     };
+    // }
+    let access = await getAccessFromDb(username);
+
     let user_info = req.session.user_info;
     req.session.user_info = {
-        ...memberObj,
+        access: access,
         ...user_info
     };
 
     // usg user is automatically an admin
 
-    res.redirect('/internal');
+    res.redirect('/');
 });
 
 app.get(`${route}/logout`, cas.logout, (req, res) => {
@@ -119,7 +184,7 @@ app.get(`/test`, (req, res) => {
     res.sendFile(__dirname + '/testing/member-profile.html');
 });
 
-app.get(`/nav_data.json`, (req, res) => {
+app.get(`/nav_data.json`, refreshSession, (req, res) => {
     // return usg.mtu.edu/nav_data.json
 
     let data = fs.readFileSync(__dirname + '/nav_data.json');
@@ -127,9 +192,14 @@ app.get(`/nav_data.json`, (req, res) => {
     res.send(data);
 });
 
+app.get("/", (req, res) => {
+    // redirect to /{route}
+    res.redirect(`/${route}`);
+})
+
 // get any file
 // specified by the path /uploaded/*
-app.get(`${route}/uploaded/*`, (req, res) => {
+app.get(`${route}/uploaded/*`, refreshSession, (req, res) => {
 
     let useFileName = req.path.split('/').pop();
 
@@ -145,7 +215,7 @@ app.get(`${route}/uploaded/*`, (req, res) => {
     }
 });
 
-app.get(`${route}/`, (req, res) => {
+app.get(`${route}/`, refreshSession, (req, res) => {
 
     console.log("SESSION", req.session);
 
@@ -154,7 +224,7 @@ app.get(`${route}/`, (req, res) => {
     });
 });
 
-app.get(`${route}/access`, async (req, res) => {
+app.get(`${route}/access`, refreshSession, async (req, res) => {
 
     let members = await db.getEndpoints.members();
 
@@ -173,7 +243,7 @@ app.get(`${route}/access`, async (req, res) => {
     });
 });
 
-app.get(`${route}/navigation`, async (req, res) => {
+app.get(`${route}/navigation`, refreshSession, async (req, res) => {
 
 
 
@@ -182,7 +252,7 @@ app.get(`${route}/navigation`, async (req, res) => {
     });
 });
 
-app.get(`${route}/profile`, async (req, res) => {
+app.get(`${route}/profile`, refreshSession, async (req, res) => {
 
     let user = req.session.user;
     if(req.query.profile){
@@ -194,10 +264,24 @@ app.get(`${route}/profile`, async (req, res) => {
         return;
     }
 
-    let profile = await db.getEndpoints.profile(user);
+    let profile = await db.getEndpoints.profile(user, true);
     if(profile.length == 0){
-        res.status(404).send('Profile not found');
-        return;
+        // then check the non-draft profiles
+        profile = await db.getEndpoints.profile(user, false);
+        if(profile.length == 0){
+            res.status(404).send('Profile not found');
+            return;
+        }
+
+        await db.postEndpoints.profile(
+            profile.username,
+            profile.name,
+            profile.position,
+            profile.status,
+            profile.data,
+            true
+        );  
+        
     }
 
     profile = profile[0];
@@ -208,9 +292,9 @@ app.get(`${route}/profile`, async (req, res) => {
     });
 });
 
-app.get(`${route}/profiles`, async (req, res) => {
+app.get(`${route}/profiles`, refreshSession, async (req, res) => {
     
-    let profiles = await db.getEndpoints.profiles();
+    let profiles = await db.getEndpoints.profiles([], false);
 
     let members = await db.getEndpoints.members();
     // get the member names...
@@ -233,7 +317,7 @@ app.get(`${route}/profiles`, async (req, res) => {
     });
 });
 
-app.get(`${route}/posts`, async (req, res) => {
+app.get(`${route}/posts`, refreshSession, async (req, res) => {
     
     let posts = await db.getEndpoints.posts();
 
@@ -243,7 +327,7 @@ app.get(`${route}/posts`, async (req, res) => {
     });
 });
 
-app.get(`${route}/template/:template*`, async (req, res) => {
+app.get(`${route}/template/:template*`, refreshSession, async (req, res) => {
 
     // also add the query parameters as variables to the template
     let query = req.query;
@@ -303,7 +387,7 @@ app.get(`${route}/template/:template*`, async (req, res) => {
     res.render(__dirname + `/views/templates/${template}`, useData);
 });
 
-app.get(`${route}/post-view`, async (req, res) => {
+app.get(`${route}/post-view`, refreshSession, async (req, res) => {
     let id = req.query.post;
 
     let post = await db.getEndpoints.post(id);
@@ -321,7 +405,7 @@ app.get(`${route}/post-view`, async (req, res) => {
     });
 });
 
-app.get(`${route}/nav_data.json`, (req, res) => {
+app.get(`${route}/nav_data.json`, refreshSession, (req, res) => {
     // return usg.mtu.edu/nav_data.json
 
     let data = fs.readFileSync(__dirname + '/nav_data.json');

@@ -33,6 +33,24 @@
         color: white;
     }
 
+    .login-banner{
+        background-color: #ffcd00;
+        padding: 5px;
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        align-items: center;
+    }
+
+    button.account-status-change{
+        background-color: black;
+        border:none;
+        border-radius: 8px;
+        padding: 5px 8px;
+        color: white;
+        cursor: pointer;
+    }
+
     #ed-497178535 {
         transition: 0.5s ease-in-out !important;
     }
@@ -77,9 +95,29 @@
                                             <% } %>
     </div>
 </div>
+<div class="bg-primary login-banner">
+    <% if(!session || !session.user) { %>
+        <span>Not Logged In</span>
+        <button onclick="location.href='/internal/authenticate'" class="account-status-change">
+            <span>Log In</span>
+        </button>
+    <% } else { %>
+        <span>Logged in as <b><%- session.user %></b></span>
+        <button onclick="location.href='/internal/logout'" class="account-status-change">
+            <span>Log Out</span>
+        </button>
+    <% } %>
+</div>
 
 <!-- <script>
-    var main_menu = document.getElementById("main-menu");
+    var main_menu = document.getElemenRSO Information
+Elections
+Financing
+Student Activity Fee
+Reimbursements and Advancements
+Opportunity and Reserve Funds
+Contact Us
+asdasdsadtById("main-menu");
     var plus_elem = document.querySelector("svg[data-icon='fa-regular-plus']").parentElement
     plus_elem.addEventListener("click", () => {
         if(main_menu.classList.contains("open")){

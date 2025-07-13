@@ -6,16 +6,21 @@
                 <span class="medium">My Profile</span>
             </button>
             <button onclick="window.location.href = 'profiles'">
-                <span class="medium">All Profiles</span>
+                <span class="medium">All Profiles*</span>
             </button>
             <button onclick="window.location.href = 'access'">
-                <span class="medium">Members</span>
+                <span class="medium">Members*</span>
             </button>
-        <% } %>
-        <% if (session.user_info && (session.user_info.access == 'admin' || session.user_info.access == 'member')) { %>
+        <% } else if (session.user_info && (session.user_info.access == 'admin' || session.user_info.access == 'member')) { %>
+            <button onclick="window.location.href = 'profile'">
+                <span class="medium">My Profile</span>
+            </button>
             <button onclick="window.location.href = 'navigation'">
                 <span class="medium">Navigation Menu Manage</span>
             </button>
+        <% } else { %>
+            <span class="medium"><i>You are not logged in</i></span>
+
         <% } %>
     </div>
     <div class="buttons">
@@ -28,13 +33,14 @@
             </button>
         <% } else { %>
             <span class="large"><%= session.user %></span>
-            <% if(session.accessLevel == 'admin') { %>
-                <button class="hover-button">
+            <% if(session.user_info.access == 'admin') { %>
+                <!-- <button class="hover-button">
                     <span class="material-symbols-outlined">tune</span>
                     <div class="sub">
                         <span class="background medium">Settings</span>
                     </div>
-                </button>
+                </button> -->
+                <span class="large">*</span>
             <% } %>
             <% if(session.accessLevel == 'none') { %>
                 <span class="large">

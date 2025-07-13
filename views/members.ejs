@@ -64,6 +64,7 @@ members = members.sort(function(a, b) {
                 <select name="access-level" disabled>
                     <option value="member">Member</option>
                     <option value="admin" selected>Admin</option>
+                    <option value="guest">Guest</option>
                 </select> 
             </div>
         </div>
@@ -77,6 +78,7 @@ members = members.sort(function(a, b) {
                 <select name="access-level" onchange="updateMember('<%= member.username %>', this.value)">
                     <option value="member" <% if(member.access == "member") { %>selected<% } %>>Member</option>
                     <option value="admin" <% if(member.access == "admin") { %>selected<% } %>>Admin</option>
+                    <option value="guest">Guest</option>
                 </select>
                 
             </div>
