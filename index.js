@@ -70,8 +70,6 @@ app.get(`${route}/session`, (req, res) => {
     res.json(obj);
 });
 
-let permanentAdmins
-
 app.get(`${route}/authenticate`, cas.bounce, async (req, res) => {
 
     let username = req.session.user;
@@ -186,9 +184,14 @@ app.get(`${route}/navigation`, async (req, res) => {
 
 app.get(`${route}/profile`, async (req, res) => {
 
-    let user = 'djreeves';
+    let user = req.session.user;
     if(req.query.profile){
         user = req.query.profile;
+    }
+
+    if(!user || user == ''){
+        res.status(400).send('No user specified');
+        return;
     }
 
     let profile = await db.getEndpoints.profile(user);
@@ -255,29 +258,43 @@ app.get(`${route}/template/:template*`, async (req, res) => {
 
     console.log("Requested template:", template, "with query:", query);
 
-    if(template == 'member_profile.ejs'){
-        // add all of the profile details to the template data
-        let profiles = await db.getEndpoints.profiles([query.position]);
-        // TODO: figure out something better than this
-        if(profiles.length == 0){
-            res.status(404).send('Profile not found');
-            return;
-        }
-
-        useData.profiles = [];
-
-        for(let i = 0; i < profiles.length; i++){
-            let profile = profiles[i];
-            let profileData = JSON.parse(profile.data);
-            if(i % 2 == 0){
-                profileData.alternate = true;
+    switch(template){
+        case 'member_profile.ejs':
+            // add all of the profile details to the template data
+            let profiles = await db.getEndpoints.profiles([query.position]);
+            // TODO: figure out something better than this
+            if(profiles.length == 0){
+                res.status(404).send('Profile not found');
+                return;
             }
-            useData.profiles.push({
-                ...profile,
-                ...profileData
-            });
-        }
 
+            useData.profiles = [];
+
+            for(let i = 0; i < profiles.length; i++){
+                let profile = profiles[i];
+                let profileData = JSON.parse(profile.data);
+                if(i % 2 == 0){
+                    profileData.alternate = true;
+                }
+                useData.profiles.push({
+                    ...profile,
+                    ...profileData
+                });
+            }
+            break;
+        case "nav_bar.ejs":
+            // need to get links from the nav_data.json file
+            // generate into columns for the nav bar (done in ejs)
+
+            let data = fs.readFileSync(__dirname + '/nav_data.json');
+            let navData = JSON.parse(data);
+            // data["categories"] has { link, name }
+            // category["links"] has { link, name, special }
+
+
+            useData.categories = navData["categories"] || [];
+            break;
+            
     }
 
     console.log("Rendering template:", template, "with data:", useData);
