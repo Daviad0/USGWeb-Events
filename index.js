@@ -1,6 +1,12 @@
 const express = require('express');
 var CASAuthentication = require('cas-authentication');
 
+var url           = require('url'),
+    http          = require('http'),
+    https         = require('https'),
+    parseXML      = require('xml2js').parseString,
+    XMLprocessors = require('xml2js/lib/processors');
+
 const dotenv = require('dotenv');
 dotenv.config();
 const body_parser = require('body-parser');
@@ -25,11 +31,31 @@ app.set('view engine', 'ejs');
  * Allowed members are defined in the database
  */
 
+/**
+ * Redirects the client to the CAS login.
+ */
+CASAuthentication.prototype._login = function(req, res, next) {
+
+    // Save the return URL in the session. If an explicit return URL is set as a
+    // query parameter, use that. Otherwise, just use the URL from the request.
+    req.session.cas_return_to = req.query.returnTo || url.parse(req.url).path;
+
+    // Set up the query parameters.
+    var query = {
+        service: this.service_url + url.parse(req.url).pathname
+    };
+
+    // Redirect to the CAS login.
+    res.redirect( this.cas_url + url.format({
+        pathname: '/login',
+        query: query
+    }));
+};
+
 const cas = new CASAuthentication({
     cas_url         : 'https://sso.mtu.edu/cas',
     service_url     : 'https://usg.mtu.edu',
     cas_version     : '3.0',
-    renew           : false,
     is_dev_mode     : false,
     dev_mode_user   : 'usg',
     dev_mode_info   : {
