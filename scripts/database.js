@@ -91,6 +91,21 @@ function initializeTables() {
         }
     });
 
+    // create elections table
+    // includes url, title, description, last_updated
+    db.run(`CREATE TABLE IF NOT EXISTS usg_elections (
+        url TEXT PRIMARY KEY,
+        title TEXT,
+        description TEXT,
+        last_updated DATETIME
+    )`, (err) => {
+        if (err) {
+            console.error('Error creating usg_elections table: ' + err.message);
+        } else {
+            console.log('usg_elections table created or already exists.');
+        }
+    });
+
     // initialize the configuration table with default values
     // key: 'permanent_accounts'
     db.run(`INSERT OR IGNORE INTO usg_configuration (key, name, description, value, last_updated) VALUES (?, ?, ?, ?, ?)`, 
@@ -182,6 +197,28 @@ const getEndpoints = {
                 resolve(results);
             });
         });
+    },
+    elections: () => {
+        return new Promise((resolve, reject) => {
+            db.all('SELECT * FROM usg_elections', [], (error, results) => {
+                if (error) {
+                    reject(error);
+                }
+
+                resolve(results);
+            });
+        });
+    },
+    election: (url) => {
+        return new Promise((resolve, reject) => {
+            db.get('SELECT * FROM usg_elections WHERE url = ?', [url], (error, results) => {
+                if (error) {
+                    reject(error);
+                }
+
+                resolve(results);
+            });
+        });
     }
     // post: (id) => {
     //     return new Promise((resolve, reject) => {
@@ -264,6 +301,34 @@ const postEndpoints = {
             }
         });
     },
+    election: (url, title, description) => {
+        return new Promise((resolve, reject) => {
+            // insert or update the election
+            // if the url already exists, update the title and description
+            // otherwise, insert a new election
+            db.run(`INSERT INTO usg_elections (url, title, description) VALUES (?, ?, ?) ON CONFLICT(url) DO UPDATE SET title = ?, description = ?`, [url, title, description, title, description], (error) => {
+                if (error) {
+                    reject(error);
+                }
+                resolve({ message: 'Election created successfully' });
+            });
+        });
+    },
+    config: (key, name, description, value) => {
+        return new Promise((resolve, reject) => {
+            // insert or update the configuration
+            // if the key already exists, update the name, description, value, and last_updated
+            // otherwise, insert a new configuration
+            db.run(`INSERT INTO usg_configuration (key, name, description, value, last_updated) VALUES (?, ?, ?, ?, ?) ON CONFLICT(key) DO UPDATE SET name = ?, description = ?, value = ?, last_updated = ?`, 
+                [key, name, description, value, new Date(), name, description, value, new Date()], 
+                (error) => {
+                if (error) {
+                    reject(error);
+                }
+                resolve({ message: 'Configuration updated successfully' });
+            });
+        });
+    }
 
     // post: (id, title, author, html_content, draft) => {
     //     return new Promise(async (resolve, reject) => {
@@ -330,6 +395,17 @@ const removeEndpoints = {
                 }
 
                 resolve({ message: 'Post removed successfully' });
+            });
+        });
+    },
+    election: (url) => {
+        return new Promise((resolve, reject) => {
+            db.run('DELETE FROM usg_elections WHERE url = ?', [url], (error) => {
+                if (error) {
+                    reject(error);
+                }
+
+                resolve({ message: 'Election removed successfully' });
             });
         });
     }

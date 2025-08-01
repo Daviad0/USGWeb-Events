@@ -343,6 +343,28 @@ app.get(`${route}/profiles`, refreshSession, async (req, res) => {
     });
 });
 
+app.get(`${route}/elections`, refreshSession, async (req, res) => {
+    
+    // let profiles = await db.getEndpoints.profiles([], false);
+
+    // let members = await db.getEndpoints.members();
+    // // get the member names...
+    // let memberUsernames = members.map(m => {
+    //     return m.username;
+    // })
+
+    // // find the members that are not in the profiles
+    // let membersWithoutProfiles = memberUsernames.filter(m => {
+    //     return !profiles.some(p => p.username === m);
+    // });
+
+    // console.log("Members:", members, "Profiles:", profiles, "Members without profiles:", membersWithoutProfiles);
+
+    res.render(__dirname + '/views/elections', {
+        session: req.session
+    });
+});
+
 app.get(`${route}/posts`, refreshSession, async (req, res) => {
     
     let posts = await db.getEndpoints.posts();
@@ -443,6 +465,16 @@ app.listen(3000, () => {
     console.log('Server is running on port 3000');
 
     db.initializeTables();
+
+    // manual test code to add a default configuration for current_elections
+    // read in from the testing/election-data.json file
+    let electionData = fs.readFileSync(__dirname + '/testing/election-data.json');
+    db.postEndpoints.config(
+        "current_elections",
+        "Current Elections",
+        "The current elections that are being held",
+        electionData.toString() // convert to string for storage
+    );
 
 });
 

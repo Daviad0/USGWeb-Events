@@ -35,7 +35,7 @@
 
     .login-banner{
         background-color: #ffcd00;
-        padding: 5px;
+        padding: 10px;
         display: flex;
         justify-content: center;
         gap: 10px;
@@ -55,6 +55,25 @@
         transition: 0.5s ease-in-out !important;
     }
 </style>
+
+<div class="bg-primary login-banner">
+    <% if(!session || !session.user) { %>
+        <span>Not Logged In</span>
+        <button onclick="location.href='/internal/authenticate'" class="account-status-change">
+            <span>Log In</span>
+        </button>
+    <% } else { %>
+        <span>Logged in as <b><%- session.user %></b></span>
+        <button onclick="location.href='/internal/logout'" class="account-status-change">
+            <span>Log Out</span>
+        </button>
+        <% if(session.user_info && (session.user_info.access == 'admin' || session.user_info.access == 'member')) { %>
+            <button onclick="location.href='/internal'" class="account-status-change">
+                <span>Manage Internal</span>
+            </button>
+        <% } %>
+    <% } %>
+</div>
 
 <div class="bg-default menu" style="display:flex;justify-content:center;flex-wrap: wrap;gap:10px">
     <div style="width:30%;min-width: 300px" id="main-menu-col1">
@@ -95,19 +114,7 @@
                                             <% } %>
     </div>
 </div>
-<div class="bg-primary login-banner">
-    <% if(!session || !session.user) { %>
-        <span>Not Logged In</span>
-        <button onclick="location.href='/internal/authenticate'" class="account-status-change">
-            <span>Log In</span>
-        </button>
-    <% } else { %>
-        <span>Logged in as <b><%- session.user %></b></span>
-        <button onclick="location.href='/internal/logout'" class="account-status-change">
-            <span>Log Out</span>
-        </button>
-    <% } %>
-</div>
+
 
 <!-- <script>
     var main_menu = document.getElemenRSO Information

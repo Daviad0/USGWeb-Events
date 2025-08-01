@@ -76,6 +76,57 @@ router.post('/member', async (req, res) => {
 });
 
 /**
+ * GET - /api/config
+ * - key: string
+ * 
+ * Gets the configuration for a given key
+ */
+router.get('/config', async (req, res) => {
+   let key = req.query.key;
+   if (!key) {
+    return res.status(400).send('Missing key parameter');
+   }
+
+   try {
+       let config = await db.getEndpoints.config(key);
+       res.status(200).send(config);
+   } catch (error) {
+       res.status(500).send('Error: ' + error);
+   }
+});
+
+/**
+ * POST - /api/config
+ * - key: string
+ * - name: string
+ * - description: string
+ * - value: string
+ * 
+ * Posts a configuration to the database
+ * If the key already exists, it will update the value
+ * Only key and value are required, name and description are optional
+ */
+router.post('/config', async (req, res) => {
+    let key = req.body.key;
+    let name = req.body.name;
+    let description = req.body.description;
+    let value = req.body.value;
+
+    if (!key || !value) {
+        return res.status(400).send('Missing parameters');
+    }
+
+    try {
+        await db.postEndpoints.config(key, name, description, value);
+        res.status(200).send('Success');
+    } catch (error) {
+        res.status(500).send('Error: ' + error);
+    }
+
+});
+
+
+/**
  * GET - /api/profile
  *  - positions: string, CSV
  * 

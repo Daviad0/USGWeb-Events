@@ -437,3 +437,12 @@ input:disabled{
 .post span{
     text-align: left;
 }
+
+.election{
+    width: 80%;
+    max-width: 700px;
+    background-color: var(--usg-segment);
+    padding: 10px;
+    margin: 5px;
+    border-radius: 8px;
+}
