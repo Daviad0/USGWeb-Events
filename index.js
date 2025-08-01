@@ -390,6 +390,8 @@ app.get(`${route}/template/:template*`, refreshSession, async (req, res) => {
 
     console.log("Requested template:", template, "with query:", query);
 
+    var data;
+
     switch(template){
         case 'member_profile.ejs':
             // add all of the profile details to the template data
@@ -418,13 +420,46 @@ app.get(`${route}/template/:template*`, refreshSession, async (req, res) => {
             // need to get links from the nav_data.json file
             // generate into columns for the nav bar (done in ejs)
 
-            let data = fs.readFileSync(__dirname + '/nav_data.json');
+            data = fs.readFileSync(__dirname + '/nav_data.json');
             let navData = JSON.parse(data);
             // data["categories"] has { link, name }
             // category["links"] has { link, name, special }
 
 
             useData.categories = navData["categories"] || [];
+            break;
+        case "home_banner.ejs":
+            // need to get links from the nav_data.json file
+            // generate into columns for the nav bar (done in ejs)
+
+            data = fs.readFileSync(__dirname + '/testing/home-banner.json');
+            data = JSON.parse(data);
+            let backgroundColor = data["background_color"] || "var(--usg-secondary)";
+            let bannerColor = data["color"] || "var(--usg-primary)";
+            // data["categories"] has { link, name }
+            // category["links"] has { link, name, special }
+
+
+            useData.banner_background = backgroundColor;
+            useData.banner_color = bannerColor;
+            useData = {
+                ...useData,
+                banner: data
+            };
+
+            // check the run_start and run_end dates as well
+            // if the current date is between those dates, then show the banner
+            let currentDate = new Date();
+            let runStart = new Date(data["run_start"]);
+            let runEnd = new Date(data["run_end"]);
+
+            if(currentDate < runStart || currentDate > runEnd){
+                res.send("");
+                // return absolutely nothing
+                return;
+            }
+
+            console.log("Using banner data:", useData);
             break;
             
     }
@@ -474,6 +509,14 @@ app.listen(3000, () => {
         "Current Elections",
         "The current elections that are being held",
         electionData.toString() // convert to string for storage
+    );
+
+    // manual test code to add a default configuration for home_banner
+    db.postEndpoints.config(
+        "home_banner",
+        "Home Banner",
+        "The banner displayed on the home page",
+        fs.readFileSync(__dirname + '/testing/home-banner.json').toString()
     );
 
 });

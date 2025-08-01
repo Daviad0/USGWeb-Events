@@ -1,0 +1,24 @@
+{
+    "last_updated": "2023-10-01T12:00:00Z",
+    "run_start": "2023-10-01T12:00:00Z",
+    "run_end": "2027-10-01T12:00:00Z",
+    "title": "Vote on the Constitution Amendments!",
+    "description": "Vote on the future of the Undergraduate Student Government through its Constitutional Amendments!",
+    "icon": "announcement",
+    "color": "var(--usg-secondary)",
+    "background_color": "var(--usg-primary)",
+    "buttons": [
+        {
+            "text": "Vote Now on Involvement Link",
+            "url": "https://www.involvement.mtu.edu/submitter/election/start/677142",
+            "icon": "",
+            "color": ""
+        },
+        {
+            "text": "Learn More",
+            "url": "https://www.involvement.mtu.edu/submitter/election/start/677142",
+            "icon": "",
+            "color": ""
+        }
+    ]
+}
