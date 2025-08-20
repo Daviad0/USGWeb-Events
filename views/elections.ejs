@@ -30,38 +30,56 @@
 
     <div>
         <div class="flex-center">
-            <div class="election">
+            <div class="election" data-url="https://involvement.mtu.edu">
                 <div class="flex-apart">
                     <div class="flex-center">
-                        <span class="medium">Election</span>
-                        <input class="small" type="text" placeholder="Election URL" name="election-url" value="https://involvement.mtu.edu"/>
+                        <span class="medium">Election URL</span>
+                        
 
                     </div>
-                    
+                    <input class="small" style="width:50%;" type="text" placeholder="Election URL" name="election-url" value="https://involvement.mtu.edu" disabled/>
+                </div>
+                <div class="flex-apart">
                     <div class="flex-center">
-                        <% let bgColor = 'bg-error'; %>
-                        <% if(p.status == 'review'){ bgColor = 'bg-secondary'; } %>
-                        <% if(p.status == 'ok'){ bgColor = 'bg-success'; } %>
-                        <select class="<%= bgColor %> small" name="status" onchange="editProfile('<%= p.username %>', 'status')">
-                            <option value="hide" <% if(p.status == "hide") { %> selected <% } %>>Hidden</option>
-                            <option value="bad" <% if(p.status == "bad") { %> selected <% } %>>Pending Edits</option>
-                            <option value="review" <% if(p.status == "review") { %> selected <% } %>>Under Review</option>
-                            <option value="ok" <% if(p.status == "ok") { %> selected <% } %>>OK</option>
-                        </select>
-                        <button class="hover-button flex-center" onclick="window.location.href='/internal/profile?profile=<%= p.username %>'">
+                        <span class="medium">Election Title</span>
+                        
+
+                    </div>
+                    <input class="small" style="width:50%;" type="text" onchange="editElection('')" placeholder="Election Title" name="election-title" value="MTU Student Election"/>
+                </div>
+                <div class="flex-apart">
+                    <div class="flex-center">
+                        <span class="medium">Election Description</span>
+                        
+
+                    </div>
+                    <input class="small" style="width:50%;" type="text" onchange="editElection('')" placeholder="Election Description" name="election-description" value="MTU Student Election Description"/>
+                </div>
+                <div class="flex-apart" style="margin-top: 10px">
+                    <div class="flex-center" style="gap: 5px">
+                        <span class="material-symbols-outlined medium">check_box</span>
+                        <span class="medium">Election Selected</span>
+                    </div>
+                    <div class="flex-center" style="gap:5px">
+                        <button class="hover-button flex-center bg-success" onclick="selectElection()">
+                            <span class="material-symbols-outlined small">bucket_check</span>
+                            <div class="sub">
+                                <span class="background small">Toggle Select</span>
+                            </div>
+                        </button>
+                        <button class="hover-button flex-center" onclick="window.location.href='/internal/election'">
                             <span class="material-symbols-outlined small">edit</span>
                             <div class="sub">
                                 <span class="background small">Edit</span>
                             </div>
                         </button>
-                        <button class="hover-button flex-center" onclick="removeProfile('<%= p.username %>')">
+                        <button class="hover-button flex-center bg-error" onclick="removeElection()">
                             <span class="material-symbols-outlined small">delete_forever</span>
                             <div class="sub">
                                 <span class="background small">Delete</span>
                             </div>
                         </button>
                     </div>
-                    
                 </div>
             </div>
         </div>
@@ -133,6 +151,62 @@
     //         alert("Error adding profile");
     //     });
     // }
+
+    function addElection(){
+        let url = document.getElementById('election_url').value;
+
+        if(!url){
+            alert("Please enter a valid URL");
+            return;
+        }
+
+        post('/internal/api/election', {
+            url: url
+        }).then(res => {
+            window.location.reload();
+        }).catch(err => {
+            alert("Error adding election");
+        });
+    }
+
+    function removeElection(){
+        let url = document.getElementById('election_url').value;
+
+        if(!url){
+            alert("Please enter a valid URL");
+            return;
+        }
+
+        post('/internal/api/election', {
+            url: url,
+            delete: true
+        }).then(res => {
+            window.location.reload();
+        }).catch(err => {
+            alert("Error removing election");
+        });
+    }
+
+    function editElection(url){
+        if(!url || !name){
+            return;
+        }
+
+        let useUrl = url;
+        let useDescription = document.querySelector(`.election[data-url="${url}"] input[name="election-description"]`).value;
+        let useTitle = document.querySelector(`.election[data-url="${url}"] input[name="election-title"]`).value;
+
+        post('/internal/api/election', {
+            url: useUrl,
+            title: useTitle,
+            description: useDescription
+        }).then(res => {
+            print("Election updated successfully");
+        }).catch(err => {
+            alert("Error updating election");
+        });
+
+    }
 
     // function removeProfile(username){
     //     post('/internal/api/profile', {

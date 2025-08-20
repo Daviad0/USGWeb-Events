@@ -125,6 +125,53 @@ router.post('/config', async (req, res) => {
 
 });
 
+/**
+ * GET - /api/election
+ * - url: string
+ * 
+ * Gets the election information for a given URL
+ */
+router.get('/election', async (req, res) => {
+    let url = req.query.url;
+    if (!url) {
+        return res.status(400).send('Missing URL parameter');
+    }
+
+    try {
+        let election = await db.getEndpoints.election(url);
+        res.status(200).send(election);
+    } catch (error) {
+        res.status(500).send('Error: ' + error);
+    }
+});
+
+/**
+ * POST - /api/election
+ * - url: string
+ * - title: string
+ * - description: string
+ * - delete: boolean (optional)
+ * 
+ * Posts an election to the database
+ * If the URL already exists, it will update the title and description
+ */
+router.post('/election', async (req, res) => {
+    let url = req.body.url;
+    let title = req.body.title;
+    let description = req.body.description;
+
+    if (!url || !title) {
+        return res.status(400).send('Missing parameters');
+    }
+
+    try {
+        await db.postEndpoints.election(url, title, description);
+        res.status(200).send('Success');
+    } catch (error) {
+        res.status(500).send('Error: ' + error);
+    }
+});
+
 
 /**
  * GET - /api/profile

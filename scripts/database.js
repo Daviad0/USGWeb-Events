@@ -106,6 +106,9 @@ function initializeTables() {
         }
     });
 
+    
+    
+
     // initialize the configuration table with default values
     // key: 'permanent_accounts'
     db.run(`INSERT OR IGNORE INTO usg_configuration (key, name, description, value, last_updated) VALUES (?, ?, ?, ?, ?)`, 
