@@ -191,7 +191,7 @@ const getEndpoints = {
     },
     profile: (username, draft) => {
         return new Promise((resolve, reject) => {
-            let table = draft ? 'usg_profiles_draft' : 'usg_profiles';
+            let table = 'usg_profiles';
             db.all(`SELECT * FROM ${table} WHERE username = ?`, [username], (error, results) => {
                 if (error) {
                     reject(error);
@@ -274,7 +274,7 @@ const postEndpoints = {
         });
     },
     profile: (username, name, position, status, data, draft) => {
-        let table = draft ? 'usg_profiles_draft' : 'usg_profiles';
+        let table = 'usg_profiles';
         
         return new Promise(async (resolve, reject) => {
             // get the current profile
@@ -292,6 +292,38 @@ const postEndpoints = {
                         reject(error);
                     }
                     resolve({ message: 'Profile updated successfully' });
+                });
+
+            }else{
+                db.run(`INSERT INTO ${table} (username, name, position, status, data, last_updated) VALUES (?, ?, ?, ?, ?, ?)`, [username, name, position, status, data, new Date()], (error) => {
+                    if (error) {
+                        reject(error);
+                    }
+                    resolve({ message: 'Profile created successfully' });
+                });
+            }
+        });
+    },
+    moveProfileToFinal: (username) => {
+        return new Promise(async (resolve, reject) => {
+            // get the current profile
+
+            let results = await getEndpoints.profile(username);
+            if(results.length > 0){
+                let name = results[0].name;
+                let position = results[0].position;
+                let status = results[0].status;
+                let data = results[0].data;
+                let last_updated = new Date();
+                let new_username = `${username}\$final`;
+
+                // insert or update the final profile into usg_profiles
+                db.run(`INSERT INTO usg_profiles (username, name, position, status, data, last_updated) VALUES (?, ?, ?, ?, ?, ?) ON CONFLICT(username) DO UPDATE SET name = ?, position = ?, status = ?, data = ?, last_updated = ?`, 
+                    [new_username, name, position, status, data, last_updated, name, position, status, data, last_updated], (error) => {
+                    if (error) {
+                        reject(error);
+                    }
+                    resolve({ message: 'Profile moved to final successfully' });
                 });
 
             }else{
@@ -379,9 +411,9 @@ const removeEndpoints = {
         });
     },
     profile: (username, draft) => {
-        let table = draft ? 'usg_profiles_draft' : 'usg_profiles';
+        let table = 'usg_profiles';
         return new Promise((resolve, reject) => {
-            db.run(`DELETE FROM ${table} WHERE username = ?`, [username], (error) => {
+            db.run(`DELETE FROM ${table} WHERE username = ? OR username = ?`, [username, `${username}\$final`], (error) => {
                 if (error) {
                     reject(error);
                 }

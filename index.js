@@ -56,7 +56,7 @@ const cas = new CASAuthentication({
     cas_url         : 'https://sso.mtu.edu/cas',
     service_url     : 'https://usg.mtu.edu',
     cas_version     : '3.0',
-    is_dev_mode     : false,
+    is_dev_mode     : true,
     dev_mode_user   : 'usg',
     dev_mode_info   : {
         displayName: "David Reeves",
@@ -398,15 +398,38 @@ app.get(`${route}/template/:template*`, refreshSession, async (req, res) => {
             let profiles = await db.getEndpoints.profiles([query.position]);
             // TODO: figure out something better than this
             if(profiles.length == 0){
-                res.status(404).send('Profile not found');
                 return;
             }
 
+            
             useData.profiles = [];
+
+            // also parse on username and status if provided
+
+
 
             for(let i = 0; i < profiles.length; i++){
                 let profile = profiles[i];
                 let profileData = JSON.parse(profile.data);
+
+                let username = profile.username || "";
+                let status = profile.status || "hide";
+
+                // if username contains "$final", then keep it as is
+                if(username.includes("$final")){
+                    username = username.replace("$final", "");
+                }else{
+                    continue;
+                }
+
+                // if status is not "ok", then skip this profile
+                if(status != "ok"){
+                    continue;
+                }
+
+                if(!profileData){
+                    profileData = {};
+                }
                 if(i % 2 == 0){
                     profileData.alternate = true;
                 }

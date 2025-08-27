@@ -58,6 +58,12 @@
     <div>
         <% profiles.forEach(p => { %>
 
+            <!-- if profile ends in $final, do not show -->
+
+            <% if(p.username.includes("$final")) { return; } %>
+
+
+
             
 
             <div class="flex-center">
@@ -132,6 +138,12 @@
                     <% if(!members.includes(p.username)) { %>
                         <div class="segment warning">
                             <span class="small">Warning: This user is <b>NOT</b> an Undergraduate Student Government member... Please remove their profile if appropriate.</span>
+                        </div>
+                    <% } %>
+                    <!-- if profiles does NOT contain a username$final version... -->
+                    <% if(!profiles.find(p2 => p2.username == `${p.username}\$final`)) { %>
+                        <div class="segment warning">
+                            <span class="small">Warning: This user profile is <b>NOT</b> published! Mark as hidden or OK (as an admin) to do so!</span>
                         </div>
                     <% } %>
                     <input class="no-display" type="text" name="description" value="<%= p.data %>"/>

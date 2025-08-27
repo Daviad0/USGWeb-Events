@@ -11,6 +11,9 @@
             <button onclick="window.location.href = 'access'">
                 <span class="medium">Members*</span>
             </button>
+            <button onclick="window.location.href = 'navigation'">
+                <span class="medium">Navigation Menu Manage</span>
+            </button>
         <% } else if (session.user_info && (session.user_info.access == 'admin' || session.user_info.access == 'member')) { %>
             <button onclick="window.location.href = 'profile'">
                 <span class="medium">My Profile</span>

@@ -241,6 +241,11 @@ router.post('/profile', async (req, res) => {
 
     console.log(username, name, position, status, data, deleteProfile);
 
+    // set the status if set
+    if(status){
+        profile.status = status;
+    }
+
     if(deleteProfile){
         try {
             await db.removeEndpoints.profile(username);
@@ -252,15 +257,18 @@ router.post('/profile', async (req, res) => {
     }
     try {
         // we are working with a draft
-        await db.postEndpoints.profile(username, name, position, status, data, true);
-        if(canPostDirectlyToReal){
+        // await db.postEndpoints.profile(username, name, position, status, data, true);
+        await db.postEndpoints.profile(username, name, position, status, data);
+        if(canPostDirectlyToReal && (profile.status == "ok" || profile.status == "hide")){
             // post to the real table as well!
-            await db.postEndpoints.profile(username, name, position, status, data, false);
+            // copy over the entire profile from draft (username) to final (username$final)
+            await db.postEndpoints.moveProfileToFinal(username);
         }
         res.status(200).send('Success');
     } catch (error) {
         res.status(500).send('Error: ' + error);
     }
+
 });
 
 /**
