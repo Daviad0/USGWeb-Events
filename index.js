@@ -398,7 +398,8 @@ app.get(`${route}/template/:template*`, refreshSession, async (req, res) => {
             let profiles = await db.getEndpoints.profiles([query.position]);
             // TODO: figure out something better than this
             if(profiles.length == 0){
-                return;
+                useData.profiles = [];
+                break;
             }
 
             
