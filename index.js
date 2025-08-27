@@ -56,7 +56,7 @@ const cas = new CASAuthentication({
     cas_url         : 'https://sso.mtu.edu/cas',
     service_url     : 'https://usg.mtu.edu',
     cas_version     : '3.0',
-    is_dev_mode     : true,
+    is_dev_mode     : false,
     dev_mode_user   : 'usg',
     dev_mode_info   : {
         displayName: "David Reeves",
