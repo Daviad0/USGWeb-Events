@@ -485,6 +485,100 @@ app.get(`${route}/template/:template*`, refreshSession, async (req, res) => {
 
             console.log("Using banner data:", useData);
             break;
+        case "office_hours.ejs":
+            // need to get all of the blocks from the office-blocks.json file
+            data = fs.readFileSync(__dirname + '/testing/office-blocks.json');
+            data = JSON.parse(data);
+
+            let labels = [
+                "Sunday",
+                "Monday",
+                "Tuesday",
+                "Wednesday",
+                "Thursday",
+                "Friday",
+                "Saturday"
+            ];
+
+            // we will have 14 days
+            // each are separate objects
+            // each day will have the blocks that are on that day
+            // along with the day of the week label
+            let days = {
+                0: {},
+                1: {},
+                2: {},
+                3: {},
+                4: {},
+                5: {},
+                6: {},
+                7: {},
+                8: {},
+                9: {},
+                10: {},
+                11: {},
+                12: {},
+                13: {}
+            };
+            // start at the first block day, each block we get the delta day from the start day
+            // and then use that to determine the index
+
+            let startDate = new Date(data.start);
+            // just get day of week and start looping through...
+            for(let i = 0; i < 14; i++){
+                let currentDate = new Date(startDate);
+                currentDate.setDate(startDate.getDate() + i);
+                let dayOfWeek = currentDate.getDay();
+                days[i] = {
+                    label: labels[dayOfWeek],
+                    date: currentDate.toISOString().split('T')[0], // YYYY-MM-DD
+                    blocks: []
+                };
+            }
+
+            // loop through each block and begin sorting (based on the delta from startDate)
+
+            // foreach block, get the hours and turn into class name
+            data.blocks = data.blocks.map(block => {
+                let className = "";
+                let hoursString = block.hours;
+
+                // replace . with -
+                hoursString = hoursString.toString().replace('.', '-');
+
+                className = "time" + hoursString;
+
+                return {...block, className: className};
+            });
+
+            for(let block of data.blocks){
+                let blockDate = new Date(block.block_start);
+                let deltaDays = Math.floor((blockDate - startDate) / (1000 * 60 * 60 * 24));
+                if(deltaDays >= 0 && deltaDays < 14){
+                    days[deltaDays].blocks.push(block);
+                }
+            }
+
+            // delete Saturday / Sunday keys
+            for(let i = 0; i < 14; i++){
+                if(days[i].label == "Saturday" || days[i].label == "Sunday"){
+                    delete days[i];
+                }
+            }
+
+            let arrayOfDays = [];
+
+            // go through the days object and put into an array
+            // in order from 0 to 13
+            for(let i = 0; i < 14; i++){
+                if(days[i]){
+                    arrayOfDays.push(days[i]);
+                }
+            }
+
+            // put into blocks object
+            useData.days = arrayOfDays;
+            break;
             
     }
 
@@ -518,6 +612,27 @@ app.get(`${route}/nav_data.json`, refreshSession, (req, res) => {
     let data = fs.readFileSync(__dirname + '/nav_data.json');
 
     res.send(data);
+});
+
+app.post(`${route}/election_data`, refreshSession, (req, res) => {
+    // just come up with general API key and compare
+    let key = req.body.key;
+    let blocks = req.body.blocks;
+
+    // check the key with the env.GENERAL_KEY
+
+    if(!(key && key == env.GENERAL_KEY)){
+        res.status(401).send("Unauthorized");
+    }
+
+    let jsonObj = {
+        blocks: blocks
+    };
+
+    // now write to the file
+    fs.writeFileSync(__dirname + '/testing/election-data.json', JSON.stringify(jsonObj, null, 4));
+
+    res.json({status: "ok"});
 });
 
 app.listen(3000, () => {
