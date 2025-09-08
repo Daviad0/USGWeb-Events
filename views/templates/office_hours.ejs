@@ -9,6 +9,7 @@
         --usg-error: #eb2c49;
         --usg-success: #18c471;
         --usg-warning: #e09f43;
+        --usg-primary-background: #fff4b1;
         --block-size: 30px;
     }
 
@@ -23,22 +24,35 @@
     Each column is 150px wide (min) and 1fr (max)
 
     */
+
+    .flex-center{
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
     
     .week-view{
         display: flex;
         justify-content: center;
         align-items: start;
         width: 100%;
+        margin: 10px 0px;
     }
 
     /* Each day view, 55px per 30m */
 
     .day-view{
         min-width: 150px;
-        max-width: 250px;
+        max-width: 300px;
         width: 20%; /* 5 columns */
 
         margin: 0px 5px;
+        padding: 0px 5px;
+    }
+
+    .day-view.selected{
+        background-color: var(--usg-primary-background);
+        border-radius: 10px;
     }
 
     span{
@@ -50,6 +64,7 @@
         margin-bottom: 5px;
         padding: 10px;
         text-align: center;
+        overflow-y: auto;
     }
 
     .schedule-item.active{
@@ -173,11 +188,16 @@
 
 </style>
 
+<% let today = new Date(); %>
+<% let todayDayOfMonth = today.toISOString().split('T')[0] %>
 <div class="week-view">
     <% for(let i = 0; i < 5; i++) { %>
         <% let day = days[i]; if(!day) continue; %>
-        <div class="day-view">
-            <p><%= day.label %></p>
+        <div class="day-view <%= day.date == todayDayOfMonth ? "selected" : "" %>">
+            <div class="flex-center">
+                <h3><%= day.label %> (<%= day.date %>)</h3>
+            </div>
+            
 
             <!-- go through each block in blocks -->
 
@@ -186,6 +206,7 @@
                 <% let start_time = new Date(block.block_start); %>
                 <% let end_time = new Date(block.block_end); %>
                 <!-- format start_time and end_time as XPM / XAM-->
+
 
                 <% let start_am_pm = start_time.getHours() >= 12 ? "PM" : "AM"; %>
                 <% let end_am_pm = end_time.getHours() >= 12 ? "PM" : "AM"; %>
@@ -224,7 +245,156 @@
 
                         <div class="representative">
                             <span><%= sub.name %></span>
-                            <div class="action">
+                            <div class="action" onclick="window.open('mailto:<%= sub.email %>')">
+                                <span style="font-size: 16px;" class="material-symbols-rounded">
+                                    mail
+                                </span>
+                                <div class="sub">Email</div>
+                            </div>
+                            <% if(sub_start_hour != start_hour || sub_end_hour != end_hour) { %>
+                                <div class="action">
+                                <span style="font-size: 16px;" class="material-symbols-rounded">
+                                    hourglass
+                                </span>
+                                <div class="sub"><%= sub_start_hour %><%= sub_start_am_pm %>-<%= sub_end_hour %><%= sub_end_am_pm %></div>
+                            </div>
+                            <% } %>
+
+                        </div>
+                    <% }); %>
+                    
+                    <% } else if(type == "break" && block.type == "Break") { %>
+                        <span>Break</span>
+                    <% } else if(type == "break" && block.type == "Closed") { %>
+                        <span>Closed</span>
+                    <% } %>
+                    
+                </div>
+            <% }); %>
+
+            <!-- <div class="schedule-item active">
+                abcdefgj
+            </div>
+            <div class="schedule-item break">
+                
+            </div>
+            <div class="schedule-item inactive">
+                abcdefg
+            </div> -->
+        </div>
+    <% } %>
+    <!-- <div class="day-view">
+        <p>asdads</p>
+        <div class="schedule-item active time2">
+            <div class="header">
+                <span class="material-symbols-rounded">event</span>
+                <b style="flex:1">9AM-10AM</b>
+            </div>
+            <span>djreeves@mtu.edu</span>
+            <span>David Reeves</span>
+        </div>
+        <div class="schedule-item break">
+            
+        </div>
+        <div class="schedule-item inactive">
+            abcdefg
+        </div>
+    </div>
+    <div class="day-view">
+        <p>asdads</p>
+        <div class="schedule-item active">
+            abcdefgj
+        </div>
+        <div class="schedule-item break">
+            
+        </div>
+        <div class="schedule-item inactive">
+            abcdefg
+        </div>
+    </div>
+    <div class="day-view">
+        <p>asdads</p>
+        <div class="schedule-item active">
+            abcdefgj
+        </div>
+        <div class="schedule-item break">
+            Closed
+        </div>
+        <div class="schedule-item inactive">
+            abcdefg
+        </div>
+    </div>
+    <div class="day-view">
+        <p>asdads</p>
+        <div class="schedule-item active">
+            abcdefgj
+        </div>
+        <div class="schedule-item break">
+            
+        </div>
+        <div class="schedule-item inactive">
+            abcdefg
+        </div>
+    </div> -->
+</div>
+<hr/>
+<div class="week-view">
+    
+    <% for(let i = 5; i < 10; i++) { %>
+        <% let day = days[i]; if(!day) continue; %>
+        <div class="day-view <%= day.date == todayDayOfMonth ? "selected" : "" %>">
+            <div class="flex-center">
+                <h3><%= day.label %> (<%= day.date %>)</h3>
+            </div>
+            
+
+            <!-- go through each block in blocks -->
+
+            <% day.blocks.forEach(block => { %>
+                <% let type = block.type == "Open" ? "active" : ((block.type == "Break" || block.type == "Closed") ? "break" : "inactive"); %>
+                <% let start_time = new Date(block.block_start); %>
+                <% let end_time = new Date(block.block_end); %>
+                <!-- format start_time and end_time as XPM / XAM-->
+
+
+                <% let start_am_pm = start_time.getHours() >= 12 ? "PM" : "AM"; %>
+                <% let end_am_pm = end_time.getHours() >= 12 ? "PM" : "AM"; %>
+                <% let start_hour = start_time.getHours() % 12; %>
+                <% let end_hour = end_time.getHours() % 12; %>
+                <% let start_min = start_time.getMinutes().toString().padStart(2, '0'); %>
+                <% let end_min = end_time.getMinutes().toString().padStart(2, '0'); %>
+                <% if (start_hour == 0) start_hour = 12; %>
+                <% if (end_hour == 0) end_hour = 12; %>
+
+                
+                <div class="schedule-item <%= type %> <%= block.className %>">
+                    <!--if open, then details; if closed, then Closed-->
+                    <% if(type == "active") { %>
+                    <div class="header">
+                        <span class="material-symbols-rounded">event</span>
+                        <b style="flex:1"><%= start_hour %>:<%= start_min %> <%= start_am_pm %>-<%= end_hour %>:<%= end_min %> <%= end_am_pm %></b>
+                    </div>
+                    <% block.sub_blocks.forEach(sub => { %>
+
+                        <!-- Get the start hour and end hour for the representative now (as part of "start" and "end") -->
+
+                        <% let sub_start = new Date(sub.start); %>
+                        <% let sub_end = new Date(sub.end); %>
+                        <% let sub_start_am_pm = sub_start.getHours() >= 12 ? "P" : "A"; %>
+                        <% let sub_end_am_pm = sub_end.getHours() >= 12 ? "P" : "A"; %>
+                        <% let sub_start_hour = sub_start.getHours() % 12; %>
+                        <% let sub_end_hour = sub_end.getHours() % 12; %>
+                        <% let sub_start_min = sub_start.getMinutes().toString().padStart(2, '0'); %>
+                        <% let sub_end_min = sub_end.getMinutes().toString().padStart(2, '0'); %>
+                        <% if (sub_start_hour == 0) sub_start_hour = 12; %>
+                        <% if (sub_end_hour == 0) sub_end_hour = 12; %>
+
+                        <!-- If any of the HOURS DIFFER from the other, show an hour tooltip -->
+                         
+
+                        <div class="representative">
+                            <span><%= sub.name %></span>
+                            <div class="action" onclick="window.open('mailto:<%= sub.email %>')">
                                 <span style="font-size: 16px;" class="material-symbols-rounded">
                                     mail
                                 </span>
