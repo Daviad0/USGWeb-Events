@@ -195,7 +195,7 @@
         <% let day = days[i]; if(!day) continue; %>
         <div class="day-view <%= day.date == todayDayOfMonth ? "selected" : "" %>">
             <div class="flex-center">
-                <h3><%= day.label %> (<%= day.date %>)</h3>
+                <b style="font-size: 20px;"><%= day.label %> (<%= day.date %>)</b>
             </div>
             
 
@@ -344,7 +344,7 @@
         <% let day = days[i]; if(!day) continue; %>
         <div class="day-view <%= day.date == todayDayOfMonth ? "selected" : "" %>">
             <div class="flex-center">
-                <h3><%= day.label %> (<%= day.date %>)</h3>
+                <b style="font-size: 20px;"><%= day.label %> (<%= day.date %>)</b>
             </div>
             
 
