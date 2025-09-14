@@ -614,7 +614,7 @@ app.get(`${route}/nav_data.json`, refreshSession, (req, res) => {
     res.send(data);
 });
 
-app.post(`${route}/election_data`, refreshSession, (req, res) => {
+app.post(`${route}/office_blocks`, refreshSession, (req, res) => {
     // just come up with general API key and compare
     let key = req.body.key;
     let blocks = req.body.blocks;
@@ -632,7 +632,7 @@ app.post(`${route}/election_data`, refreshSession, (req, res) => {
     };
 
     // now write to the file
-    fs.writeFileSync(__dirname + '/testing/election-data.json', JSON.stringify(jsonObj, null, 4));
+    fs.writeFileSync(__dirname + '/testing/office-blocks.json', JSON.stringify(jsonObj, null, 4));
 
     res.json({status: "ok"});
 });
