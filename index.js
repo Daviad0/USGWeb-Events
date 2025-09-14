@@ -622,7 +622,7 @@ app.post(`${route}/election_data`, refreshSession, (req, res) => {
 
     // check the key with the env.GENERAL_KEY
 
-    if(!(key && key == env.GENERAL_KEY)){
+    if(!(key && key == process.env.GENERAL_KEY)){
         res.status(401).send("Unauthorized");
     }
 
