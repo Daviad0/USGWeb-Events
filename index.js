@@ -618,6 +618,7 @@ app.post(`${route}/election_data`, refreshSession, (req, res) => {
     // just come up with general API key and compare
     let key = req.body.key;
     let blocks = req.body.blocks;
+    let start = req.body.start;
 
     // check the key with the env.GENERAL_KEY
 
@@ -626,6 +627,7 @@ app.post(`${route}/election_data`, refreshSession, (req, res) => {
     }
 
     let jsonObj = {
+        start: start,
         blocks: blocks
     };
 
