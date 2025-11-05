@@ -118,6 +118,12 @@
                                 <option value="no">No</option>
                             </select>
                         </div>
+                        <button class="hover-button flex-center bg-error background" style="margin-left: 5px;" id="delete-button" onclick="removeButton(event)">
+                            <span class="material-symbols-outlined small">remove</span>
+                            <div class="sub">
+                                <span class="background small">Remove Button</span>
+                            </div>
+                        </button>
                     </div>
                     
                     
@@ -378,6 +384,12 @@
         clone.style.display = 'block';
         clone.removeAttribute('id');
         buttonsDiv.appendChild(clone);
+    }
+
+    function removeButton(event){
+        let button = event.currentTarget;
+        let segment = button.parentElement;
+        segment.remove();
     }
 
     function changeColorSchemePreview(){
