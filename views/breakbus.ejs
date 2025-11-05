@@ -1,0 +1,399 @@
+<%- include('components/common') %>
+<%- include('components/header', { session: session }) %>
+
+<div class="content">
+    <br/>
+
+    <div class="flex-center">
+        <span class="huge">Manage Break Bus Banner</span>
+    </div>
+    <br/>
+    <div class="flex-center" style="gap:5px">
+        <button class="hover-button flex-center" id="publish" onclick="publishBanner()">
+            <span class="material-symbols-outlined">save</span>
+            <div class="sub">
+                <span class="background medium">Publish</span>
+            </div>
+        </button>
+        <button class="hover-button flex-center" id="download" onclick="downloadBanner()">
+            <span class="material-symbols-outlined">download</span>
+            <div class="sub">
+                <span class="background medium">Download</span>
+            </div>
+        </button>
+        <button class="hover-button flex-center" id="upload" onclick="uploadBanner()">
+            <span class="material-symbols-outlined">upload_file</span>
+            <div class="sub">
+                <span class="background medium">Upload</span>
+            </div>
+        </button>
+    </div>
+
+    <br/>
+
+    <div class="flex-center">
+        <div class="segment profile">
+            <span class="medium">Banner On Break Bus Page</span>
+            <br/>
+            <div class="flex-center align-start">
+                <div class="flex-2 left-col">
+
+                    <div class="flex-center">
+                        <label>Title</label>
+                        <input type="text" placeholder="Flashy Title To Remember" name="d_title"/>
+                    </div>
+                    <hr/>
+                    <div class="flex-center">
+                        <label>Content</label>
+                        <textarea type="text" placeholder="Take this action!" name="d_content" rows="2"></textarea>
+                    </div>
+                    <div class="flex-center">
+                        <label>Icon</label>
+                        <input type="text" placeholder="Use Material Icon" name="d_icon" onchange="changeIconPreview()"/>
+                        <button class="hover-button flex-center" id="see-icons" onclick="openMaterialSymbols()">
+                            <span class="material-symbols-outlined small" name="d_icon_preview">check_box_outline_blank</span>
+                            <div class="sub">
+                                <span class="background small">See Icons</span>
+                            </div>
+                        </button>
+                    </div>
+                    <div class="flex-center">
+                        <label>Start</label>
+                        <input type="datetime-local" name="d_start"/>
+                    </div>
+                    <div class="flex-center">
+                        <label>End</label>
+                        <input type="datetime-local" name="d_end"/>
+                    </div>
+                    <div class="flex-center">
+                        <label>Show?</label>
+                        <select class="small" name="d_show">
+                            <option value="show">Show When Time</option>
+                            <option value="hide">Hide</option>
+                        </select>
+                    </div>
+                    <div class="flex-center">
+                        <label>Color Scheme</label>
+                        <select class="small" name="d_colorscheme" onchange="changeColorSchemePreview()">
+                            <option value="primary">Default</option>
+                            <option value="secondary">Black Back / White Text</option>
+                            <option value="success">Green Back / Black Text</option>
+                            <option value="error">Red Back / Black Text</option>
+                        </select>
+                    </div>
+                    
+
+                </div>
+                <div class="flex-1">
+                    <div class="flex-center">
+                        <span class="medium">Buttons</span>
+                        <button class="hover-button flex-center" style="margin-left: 5px;" id="add-button" onclick="addButton()">
+                            <span class="material-symbols-outlined small">add</span>
+                            <div class="sub">
+                                <span class="background small">Add Button</span>
+                            </div>
+                        </button>
+                    </div>
+
+                    <hr/>
+
+                    <div id="buttons">
+                        <!-- Buttons will be added here dynamically -->
+
+                    </div>
+
+                    <div class="inner-segment" id="button_example" style="display: none;">
+                        <div class="flex-center">
+                            <label>Button Text</label>
+                            <input type="text" class="small" placeholder="Click Me!" name="btn_text"/>
+                        </div>
+                        <div class="flex-center">
+                            <label>Button Link</label>
+                            <input type="text" class="small" placeholder="https://example.com" name="btn_link"/>
+                        </div>
+                        <div class="flex-center">
+                            <label>Open In New Tab?</label>
+                            <select class="small" name="btn_newtab">
+                                <option value="yes">Yes</option>
+                                <option value="no">No</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+
+    /*
+
+    {
+    "last_updated": "2023-10-01T12:00:00Z",
+    "run_start": "2023-10-01T12:00:00Z",
+    "run_end": "2027-10-01T12:00:00Z",
+    "title": "Break Bus Update",
+    "description": "The Break Bus service is currently experiencing issues. We are working to resolve them as quickly as possible. Thank you for your patience.",
+    "icon": "thumbs_up_down",
+    "color": "var(--usg-secondary)",
+    "hidden": true,
+    "background_color": "var(--usg-primary)",
+    "buttons": [
+        {
+            "text": "Vote in Your Representatives",
+            "url": "https://usg.mtu.edu/current-election",
+            "new_tab": false
+        },
+        {
+            "text": "Constitution Amendments",
+            "url": "https://usg.mtu.edu/vote",
+            "new_tab": false
+        },
+        {
+            "text": "RSO Voting Competition",
+            "url": "https://usg.mtu.edu/vote",
+            "new_tab": false
+        }
+    ]
+}
+    */
+
+    let structure = {};
+
+    function getInitialBanner(){
+        fetch('/internal/break-bus-info.json')
+            .then(response => response.json())
+            .then(data => {
+                structure = data;
+                initializeView();
+            });
+    }
+
+    window.onload = function(){
+        getInitialBanner();
+    };
+
+    function initializeView(){
+        let d_title = document.querySelector('input[name="d_title"]');
+        let d_content = document.querySelector('textarea[name="d_content"]');
+        let d_icon = document.querySelector('input[name="d_icon"]');
+        let d_start = document.querySelector('input[name="d_start"]');
+        let d_end = document.querySelector('input[name="d_end"]');
+        let d_show = document.querySelector('select[name="d_show"]');
+        let d_colorscheme = document.querySelector('select[name="d_colorscheme"]');
+
+        let title = structure.title || '';
+        let content = structure.description || '';
+        let icon = structure.icon || '';
+        let start = structure.run_start || '';
+        let end = structure.run_end || '';
+        let hidden = (structure.hidden) ? 'hide' : 'show';
+        let color = structure.background_color || 'var(--usg-primary)'; // background determines the scheme
+
+        d_title.value = title;
+        d_content.value = content;
+        d_icon.value = icon;
+        d_start.value = start;
+
+        // do not take timezone into account
+        console.log('End time from structure:', structure.run_end);
+        console.log('Converted end time:', end);
+        d_end.value = end;
+        d_show.value = hidden;
+
+
+        if(color == 'var(--usg-primary)'){
+            d_colorscheme.value = 'primary';
+        } else if(color == 'var(--usg-secondary)'){
+            d_colorscheme.value = 'secondary';
+        } else if(color == 'var(--usg-success)'){
+            d_colorscheme.value = 'success';
+        } else if(color == 'var(--usg-error)'){
+            d_colorscheme.value = 'error';
+        }
+
+        changeIconPreview();
+        changeColorSchemePreview();
+
+        // now handle buttons
+        let buttonsDiv = document.getElementById('buttons');
+        buttonsDiv.innerHTML = ''; // clear existing
+        let buttonsArray = structure.buttons || [];
+        buttonsArray.forEach(button => {
+            let btn_text = button.text || '';
+            let btn_link = button.url || '';
+            let btn_newtab = (button.new_tab) ? 'yes' : 'no';
+            let example = document.getElementById('button_example');
+            let clone = example.cloneNode(true);
+            clone.style.display = 'block';
+            clone.removeAttribute('id');
+            let input_text = clone.querySelector('input[name="btn_text"]');
+            let input_link = clone.querySelector('input[name="btn_link"]');
+            let select_newtab = clone.querySelector('select[name="btn_newtab"]');
+            input_text.value = btn_text;
+            input_link.value = btn_link;
+            select_newtab.value = btn_newtab;
+            buttonsDiv.appendChild(clone);
+        });
+    }
+
+
+    function generateJSON(){
+        let useStructure = {};
+
+        // first just validate that there's a title and content
+        let d_title = document.querySelector('input[name="d_title"]').value;
+        let d_content = document.querySelector('textarea[name="d_content"]').value;
+        if(d_title.trim() === '' || d_content.trim() === ''){
+            alert('Title and Content cannot be empty.');
+            return;
+        }
+
+        // now that we know we have those, build the structure
+        useStructure.title = d_title;
+        useStructure.description = d_content;
+        useStructure.icon = document.querySelector('input[name="d_icon"]').value;
+        useStructure.run_start = document.querySelector('input[name="d_start"]').value;
+        useStructure.run_end = document.querySelector('input[name="d_end"]').value;
+        let showValue = document.querySelector('select[name="d_show"]').value;
+        useStructure.hidden = (showValue === 'hide') ? true : false;
+        let colorValue = document.querySelector('select[name="d_colorscheme"]').value;
+        if(colorValue === 'primary'){
+            useStructure.background_color = 'var(--usg-primary)';
+            useStructure.color = 'var(--usg-secondary)';
+        } else if(colorValue === 'secondary'){
+            useStructure.background_color = 'var(--usg-secondary)';
+            useStructure.color = 'var(--usg-background)';
+        } else if(colorValue === 'success'){
+            useStructure.background_color = 'var(--usg-success)';
+            useStructure.color = 'var(--usg-background)';
+        } else if(colorValue === 'error'){
+            useStructure.background_color = 'var(--usg-error)';
+            useStructure.color = 'var(--usg-background)';
+        }
+
+        // now handle buttons
+        let buttonsDiv = document.getElementById('buttons');
+        let buttonSegments = buttonsDiv.querySelectorAll('.inner-segment');
+        let buttonsArray = [];
+        buttonSegments.forEach(segment => {
+            let btn_text = segment.querySelector('input[name="btn_text"]').value;
+            let btn_link = segment.querySelector('input[name="btn_link"]').value;
+            let btn_newtab = segment.querySelector('select[name="btn_newtab"]').value;
+            if(btn_text.trim() !== '' && btn_link.trim() !== ''){
+                let buttonObj = {
+                    text: btn_text,
+                    url: btn_link,
+                    new_tab: (btn_newtab === 'yes') ? true : false
+                };
+                buttonsArray.push(buttonObj);
+            }
+        });
+        useStructure.buttons = buttonsArray;
+
+        useStructure.last_updated = new Date().toISOString();
+        return useStructure;
+    }
+
+    function publishBanner(){
+        let data = generateJSON();
+        if(!data) return; // generation failed
+        document.getElementById('publish').disabled = true;
+
+        post('/internal/api/break-bus', {
+            breakBusInfo: JSON.stringify(data)
+        })
+            .then(() => {
+                alert('Published successfully!');
+                location.reload();
+            })
+            .catch((err) => {
+                alert('An error occurred: ' + err);
+            });
+    }
+
+    function downloadBanner(){
+        let data = generateJSON();
+        if(!data) return; // generation failed
+
+        let dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(data, null, 4));
+        let downloadAnchorNode = document.createElement('a');
+        downloadAnchorNode.setAttribute("href",     dataStr);
+        downloadAnchorNode.setAttribute("download", "break-bus-info.json");
+        document.body.appendChild(downloadAnchorNode); // required for firefox
+        downloadAnchorNode.click();
+        downloadAnchorNode.remove();
+    }
+
+    function uploadBanner(){
+        let input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.json';
+        input.onchange = (event) => {
+            let file = event.target.files[0];
+            let reader = new FileReader();
+            reader.onload = (event) => {
+                let data = JSON.parse(event.target.result);
+
+                // check if data has a version
+                if(data.title == undefined){
+                    alert('Data does not have a title. Invalid file!');
+                    return;
+                }
+
+                structure = data;
+                initializeView();
+                alert('Banner data uploaded successfully!');
+            }
+            reader.readAsText(file);
+        }
+        input.click();
+    }
+
+    function changeIconPreview(){
+        let icon = document.querySelector('input[name="d_icon"]').value;
+        let preview = document.querySelector('span[name="d_icon_preview"]');
+        preview.innerText = icon;
+    }
+
+    function openMaterialSymbols(){
+        window.open('https://fonts.google.com/icons', '_blank');
+    }
+
+    function addButton(){
+        // check to make sure we're not adding more than 4 buttons
+        let buttonsDiv = document.getElementById('buttons');
+        let currentButtons = buttonsDiv.querySelectorAll('.inner-segment').length;
+        if(currentButtons >= 4){
+            alert('You can only add up to 4 buttons.');
+            return;
+        }
+
+        let example = document.getElementById('button_example');
+        let clone = example.cloneNode(true);
+        clone.style.display = 'block';
+        clone.removeAttribute('id');
+        buttonsDiv.appendChild(clone);
+    }
+
+    function changeColorSchemePreview(){
+        let scheme = document.querySelector('select[name="d_colorscheme"]').value;
+        let selector = document.querySelector('select[name="d_colorscheme"]');
+        // get value, and then set the class to the appropriate one...
+
+        if(scheme === 'primary'){
+            selector.className = 'small bg-primary secondary';
+        } else if(scheme === 'secondary'){
+            selector.className = 'small bg-secondary background';
+        } else if(scheme === 'success'){
+            selector.className = 'small bg-success secondary';
+        } else if(scheme === 'error'){
+            selector.className = 'small bg-error secondary';
+        }
+    }
+    
+</script>

@@ -1,0 +1,488 @@
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+
+<style>
+    :root{
+        --usg-primary: #ffcd00;
+        --usg-secondary: #000000;
+        --usg-background: #f0f0f0;
+        --usg-segment: #d3d3d3;
+        --usg-error: #eb2c49;
+        --usg-success: #18c471;
+        --usg-warning: #e09f43;
+        --usg-primary-background: #fff4b1;
+        --block-size: 30px;
+    }
+
+    *{
+        box-sizing: border-box;
+    }
+
+
+    /* Week View 
+    
+    If cannot fit 5 columns, then have it not flex
+    Each column is 150px wide (min) and 1fr (max)
+
+    */
+
+    .flex-center{
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+    
+    .week-view{
+        display: flex;
+        justify-content: center;
+        align-items: start;
+        width: 100%;
+        margin: 10px 0px;
+    }
+
+    /* Each day view, 55px per 30m */
+
+    .day-view{
+        min-width: 150px;
+        max-width: 300px;
+        width: 20%; /* 5 columns */
+
+        margin: 0px 5px;
+        padding: 0px 5px;
+    }
+
+    .day-view.selected{
+        background-color: var(--usg-primary-background);
+        border-radius: 10px;
+    }
+
+    span{
+        display: block;
+    }
+
+    .schedule-item{
+        
+        margin-bottom: 5px;
+        padding: 10px;
+        text-align: center;
+        overflow-y: auto;
+    }
+
+    .schedule-item.active{
+        background-color: var(--usg-primary);
+        color: var(--usg-secondary);
+        border-radius: 10px;
+    }
+
+    .schedule-item.inactive{
+        background-color: var(--usg-error);
+        color: var(--usg-background);
+        border-radius: 10px;
+    }
+    .schedule-item.break{
+        border-left: 2px solid lightgray;
+        border-right: 2px solid lightgray;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: gray;
+    }
+
+    .schedule-item .header{
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        margin-bottom: 5px;
+    }
+
+    .schedule-item .representative{
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        font-size: 12px;
+        margin-bottom: 2px;
+        
+    }
+
+    .schedule-item .representative .action{
+        height: 20px;
+        border-radius: 10px;
+        background-color: var(--usg-secondary);
+        color: var(--usg-background);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        cursor: pointer;
+        padding: 6px;
+        margin-left: 5px;
+    }
+
+    .schedule-item .representative .action .sub{
+        max-width: 0px;
+        overflow: hidden;
+        transition: all 0.5s ease-in-out;
+        margin: 0px;
+        white-space: nowrap;
+    }
+
+    .schedule-item .representative .action:hover .sub{
+        max-width: 100px;
+        margin-left: 5px;
+    }
+
+    .schedule-item .representative .action:active .sub{
+        max-width: 100px;
+        margin-left: 5px;
+    }
+
+
+
+    .time-5{
+        height: 45px;
+    }
+
+    .time1{
+        height: 95px;
+    }
+
+    .time1-5{
+        height: 145px;
+    }
+
+    .time2{
+        height: 195px;
+    }
+
+    .time2-5{
+        height: 245px;
+    }
+
+    .time3{
+        height: 295px;
+    }
+
+    .time3-5{
+        height: 345px;
+    }
+
+    .time4{
+        height: 395px;
+    }
+
+    .time4-5{
+        height: 445px;
+    }
+
+    .time5{
+        height: 495px;
+    }
+
+    .time5-5{
+        height: 545px;
+    }
+
+    .time6{
+        height: 595px;
+    }
+
+</style>
+
+<% let today = new Date(); %>
+<% let todayDayOfMonth = today.toISOString().split('T')[0] %>
+<div class="week-view">
+    <% for(let i = 0; i < 5; i++) { %>
+        <% let day = days[i]; if(!day) continue; %>
+        <div class="day-view <%= day.date == todayDayOfMonth ? "selected" : "" %>">
+            <div class="flex-center" style="margin: 20px 0px;">
+                <b style="font-size: 20px;"><%= day.label %> (<%= day.date %>)</b>
+            </div>
+            
+
+            <!-- go through each block in blocks -->
+
+            <% day.blocks.forEach(block => { %>
+                <% let type = block.type == "Open" ? "active" : ((block.type == "Break" || block.type == "Closed") ? "break" : "inactive"); %>
+                <% let start_time = new Date(block.block_start); %>
+                <% let end_time = new Date(block.block_end); %>
+                <!-- format start_time and end_time as XPM / XAM-->
+
+
+                <% let start_am_pm = start_time.getHours() >= 12 ? "PM" : "AM"; %>
+                <% let end_am_pm = end_time.getHours() >= 12 ? "PM" : "AM"; %>
+                <% let start_hour = start_time.getHours() % 12; %>
+                <% let end_hour = end_time.getHours() % 12; %>
+                <% let start_min = start_time.getMinutes().toString().padStart(2, '0'); %>
+                <% let end_min = end_time.getMinutes().toString().padStart(2, '0'); %>
+                <% if (start_hour == 0) start_hour = 12; %>
+                <% if (end_hour == 0) end_hour = 12; %>
+
+                
+                <div class="schedule-item <%= type %> <%= block.className %>">
+                    <!--if open, then details; if closed, then Closed-->
+                    <% if(type == "active") { %>
+                    <div class="header">
+                        <span class="material-symbols-rounded">event</span>
+                        <b style="flex:1"><%= start_hour %>:<%= start_min %> <%= start_am_pm %>-<%= end_hour %>:<%= end_min %> <%= end_am_pm %></b>
+                    </div>
+                    <% block.sub_blocks.forEach(sub => { %>
+
+                        <!-- Get the start hour and end hour for the representative now (as part of "start" and "end") -->
+
+                        <% let sub_start = new Date(sub.start); %>
+                        <% let sub_end = new Date(sub.end); %>
+                        <% let sub_start_am_pm = sub_start.getHours() >= 12 ? "P" : "A"; %>
+                        <% let sub_end_am_pm = sub_end.getHours() >= 12 ? "P" : "A"; %>
+                        <% let sub_start_hour = sub_start.getHours() % 12; %>
+                        <% let sub_end_hour = sub_end.getHours() % 12; %>
+                        <% let sub_start_min = sub_start.getMinutes().toString().padStart(2, '0'); %>
+                        <% let sub_end_min = sub_end.getMinutes().toString().padStart(2, '0'); %>
+                        <% if (sub_start_hour == 0) sub_start_hour = 12; %>
+                        <% if (sub_end_hour == 0) sub_end_hour = 12; %>
+
+                        <!-- If any of the HOURS DIFFER from the other, show an hour tooltip -->
+                         
+
+                        <div class="representative">
+                            <span><%= sub.name %></span>
+                            <div class="action" onclick="window.open('mailto:<%= sub.email %>')">
+                                <span style="font-size: 16px;" class="material-symbols-rounded">
+                                    mail
+                                </span>
+                                <div class="sub">Email</div>
+                            </div>
+                            <% if(sub_start_hour != start_hour || sub_end_hour != end_hour) { %>
+                                <div class="action">
+                                <span style="font-size: 16px;" class="material-symbols-rounded">
+                                    hourglass
+                                </span>
+                                <div class="sub"><%= sub_start_hour %><%= sub_start_am_pm %>-<%= sub_end_hour %><%= sub_end_am_pm %></div>
+                            </div>
+                            <% } %>
+
+                        </div>
+                    <% }); %>
+                    
+                    <% } else if(type == "break" && block.type == "Break") { %>
+                        <span>Break</span>
+                    <% } else if(type == "break" && block.type == "Closed") { %>
+                        <span>Closed</span>
+                    <% } %>
+                    
+                </div>
+            <% }); %>
+
+            <!-- <div class="schedule-item active">
+                abcdefgj
+            </div>
+            <div class="schedule-item break">
+                
+            </div>
+            <div class="schedule-item inactive">
+                abcdefg
+            </div> -->
+        </div>
+    <% } %>
+    <!-- <div class="day-view">
+        <p>asdads</p>
+        <div class="schedule-item active time2">
+            <div class="header">
+                <span class="material-symbols-rounded">event</span>
+                <b style="flex:1">9AM-10AM</b>
+            </div>
+            <span>djreeves@mtu.edu</span>
+            <span>David Reeves</span>
+        </div>
+        <div class="schedule-item break">
+            
+        </div>
+        <div class="schedule-item inactive">
+            abcdefg
+        </div>
+    </div>
+    <div class="day-view">
+        <p>asdads</p>
+        <div class="schedule-item active">
+            abcdefgj
+        </div>
+        <div class="schedule-item break">
+            
+        </div>
+        <div class="schedule-item inactive">
+            abcdefg
+        </div>
+    </div>
+    <div class="day-view">
+        <p>asdads</p>
+        <div class="schedule-item active">
+            abcdefgj
+        </div>
+        <div class="schedule-item break">
+            Closed
+        </div>
+        <div class="schedule-item inactive">
+            abcdefg
+        </div>
+    </div>
+    <div class="day-view">
+        <p>asdads</p>
+        <div class="schedule-item active">
+            abcdefgj
+        </div>
+        <div class="schedule-item break">
+            
+        </div>
+        <div class="schedule-item inactive">
+            abcdefg
+        </div>
+    </div> -->
+</div>
+<hr/>
+<div class="week-view">
+    
+    <% for(let i = 5; i < 10; i++) { %>
+        <% let day = days[i]; if(!day) continue; %>
+        <div class="day-view <%= day.date == todayDayOfMonth ? "selected" : "" %>">
+            <div class="flex-center" style="margin: 20px 0px;">
+                <b style="font-size: 20px;"><%= day.label %> (<%= day.date %>)</b>
+            </div>
+            
+
+            <!-- go through each block in blocks -->
+
+            <% day.blocks.forEach(block => { %>
+                <% let type = block.type == "Open" ? "active" : ((block.type == "Break" || block.type == "Closed") ? "break" : "inactive"); %>
+                <% let start_time = new Date(block.block_start); %>
+                <% let end_time = new Date(block.block_end); %>
+                <!-- format start_time and end_time as XPM / XAM-->
+
+
+                <% let start_am_pm = start_time.getHours() >= 12 ? "PM" : "AM"; %>
+                <% let end_am_pm = end_time.getHours() >= 12 ? "PM" : "AM"; %>
+                <% let start_hour = start_time.getHours() % 12; %>
+                <% let end_hour = end_time.getHours() % 12; %>
+                <% let start_min = start_time.getMinutes().toString().padStart(2, '0'); %>
+                <% let end_min = end_time.getMinutes().toString().padStart(2, '0'); %>
+                <% if (start_hour == 0) start_hour = 12; %>
+                <% if (end_hour == 0) end_hour = 12; %>
+
+                
+                <div class="schedule-item <%= type %> <%= block.className %>">
+                    <!--if open, then details; if closed, then Closed-->
+                    <% if(type == "active") { %>
+                    <div class="header">
+                        <span class="material-symbols-rounded">event</span>
+                        <b style="flex:1"><%= start_hour %>:<%= start_min %> <%= start_am_pm %>-<%= end_hour %>:<%= end_min %> <%= end_am_pm %></b>
+                    </div>
+                    <% block.sub_blocks.forEach(sub => { %>
+
+                        <!-- Get the start hour and end hour for the representative now (as part of "start" and "end") -->
+
+                        <% let sub_start = new Date(sub.start); %>
+                        <% let sub_end = new Date(sub.end); %>
+                        <% let sub_start_am_pm = sub_start.getHours() >= 12 ? "P" : "A"; %>
+                        <% let sub_end_am_pm = sub_end.getHours() >= 12 ? "P" : "A"; %>
+                        <% let sub_start_hour = sub_start.getHours() % 12; %>
+                        <% let sub_end_hour = sub_end.getHours() % 12; %>
+                        <% let sub_start_min = sub_start.getMinutes().toString().padStart(2, '0'); %>
+                        <% let sub_end_min = sub_end.getMinutes().toString().padStart(2, '0'); %>
+                        <% if (sub_start_hour == 0) sub_start_hour = 12; %>
+                        <% if (sub_end_hour == 0) sub_end_hour = 12; %>
+
+                        <!-- If any of the HOURS DIFFER from the other, show an hour tooltip -->
+                         
+
+                        <div class="representative">
+                            <span><%= sub.name %></span>
+                            <div class="action" onclick="window.open('mailto:<%= sub.email %>')">
+                                <span style="font-size: 16px;" class="material-symbols-rounded">
+                                    mail
+                                </span>
+                                <div class="sub">Email</div>
+                            </div>
+                            <% if(sub_start_hour != start_hour || sub_end_hour != end_hour) { %>
+                                <div class="action">
+                                <span style="font-size: 16px;" class="material-symbols-rounded">
+                                    hourglass
+                                </span>
+                                <div class="sub"><%= sub_start_hour %><%= sub_start_am_pm %>-<%= sub_end_hour %><%= sub_end_am_pm %></div>
+                            </div>
+                            <% } %>
+
+                        </div>
+                    <% }); %>
+                    
+                    <% } else if(type == "break" && block.type == "Break") { %>
+                        <span>Break</span>
+                    <% } else if(type == "break" && block.type == "Closed") { %>
+                        <span>Closed</span>
+                    <% } %>
+                    
+                </div>
+            <% }); %>
+
+            <!-- <div class="schedule-item active">
+                abcdefgj
+            </div>
+            <div class="schedule-item break">
+                
+            </div>
+            <div class="schedule-item inactive">
+                abcdefg
+            </div> -->
+        </div>
+    <% } %>
+    <!-- <div class="day-view">
+        <p>asdads</p>
+        <div class="schedule-item active time2">
+            <div class="header">
+                <span class="material-symbols-rounded">event</span>
+                <b style="flex:1">9AM-10AM</b>
+            </div>
+            <span>djreeves@mtu.edu</span>
+            <span>David Reeves</span>
+        </div>
+        <div class="schedule-item break">
+            
+        </div>
+        <div class="schedule-item inactive">
+            abcdefg
+        </div>
+    </div>
+    <div class="day-view">
+        <p>asdads</p>
+        <div class="schedule-item active">
+            abcdefgj
+        </div>
+        <div class="schedule-item break">
+            
+        </div>
+        <div class="schedule-item inactive">
+            abcdefg
+        </div>
+    </div>
+    <div class="day-view">
+        <p>asdads</p>
+        <div class="schedule-item active">
+            abcdefgj
+        </div>
+        <div class="schedule-item break">
+            Closed
+        </div>
+        <div class="schedule-item inactive">
+            abcdefg
+        </div>
+    </div>
+    <div class="day-view">
+        <p>asdads</p>
+        <div class="schedule-item active">
+            abcdefgj
+        </div>
+        <div class="schedule-item break">
+            
+        </div>
+        <div class="schedule-item inactive">
+            abcdefg
+        </div>
+    </div> -->
+</div>

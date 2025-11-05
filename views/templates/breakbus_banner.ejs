@@ -1,0 +1,140 @@
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+
+<style>
+    :root{
+        --usg-primary: #ffcd00;
+        --usg-secondary: #000000;
+        --usg-background: #f0f0f0;
+        --usg-segment: #d3d3d3;
+        --usg-error: #eb2c49;
+        --usg-success: #18c471;
+        --usg-warning: #e09f43;
+    }
+    
+    .menu {
+        overflow-y: hidden;
+        padding: 20px 20px;
+        transition: 0.5s ease-in-out;
+        background-color: black;
+    }
+
+    .menu.open {
+        max-height: 1000px;
+        padding: 20px;
+    }
+
+    .large-option {
+        font-size: 1.5em;
+        font-weight: 700;
+        display: block;
+        color: white;
+        margin-top: 8px;
+    }
+
+    .small-option {
+        font-size: 1em;
+        display: block;
+        color: white;
+    }
+
+    .small-option.special {
+        background-color: white;
+        padding: 3px 6px;
+        border-radius: 4px;
+        margin: 3px 0px;
+        color: white;
+    }
+
+    .login-banner{
+        background-color: #ffcd00;
+        
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        align-items: center;
+    }
+
+    button.account-status-change{
+        background-color: black;
+        border:none;
+        border-radius: 8px;
+        padding: 5px 8px;
+        color: white;
+        cursor: pointer;
+    }
+
+    #ed-497178535 {
+        transition: 0.5s ease-in-out !important;
+    }
+
+    .banner span{
+        display: block;
+    }
+
+    .banner{
+        text-align: center;
+        background-color: <%- banner_background %>;
+        color: <%- banner_color %>;
+        padding: 20px;
+    }
+
+    .flex-center {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .banner .content {
+        width: 90%;
+        max-width: 1200px;
+    }
+
+    .banner .title {
+        font-size: 1.5em;
+        font-weight: bold;
+        margin-bottom: 5px;
+    }
+
+    .banner .description {
+        font-size: 1em;
+    }
+
+    button.banner-action{
+        background-color: black;
+        border:none;
+        border-radius: 8px;
+        padding: 10px 15px;
+        color: white;
+        cursor: pointer;
+        font-size: 0.8em;
+        margin: 5px;
+    }
+</style>
+
+<div class="banner login-banner">
+    <div class="flex-center" style="width: 100%">
+        <div class="content">
+            <div class="flex-center">
+                <% if (banner.icon) { %>
+                    <span class="material-symbols-rounded" style="font-size: 2.5em;margin-right: 20px;"><%- banner.icon %></span>
+                <% } %>
+                <div>
+                    <span class="title"><%- banner.title %></span>
+                    <span class="description"><%- banner.description %></span>
+                    <% if (banner.buttons && banner.buttons.length > 0) { %>
+                        <div class="flex-center" style="margin-top: 5px">
+                            <% banner.buttons.forEach(function(button) { %>
+                                <button class="banner-action" onclick="location.href='<%- button.url %>'">
+                                    <span><%- button.text %></span>
+                                </button>
+                            <% }); %>
+                        </div>
+                    <% } %>
+                    
+                </div>
+                
+            </div>
+            
+        </div>
+    </div>
+</div>

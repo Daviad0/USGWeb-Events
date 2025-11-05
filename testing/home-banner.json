@@ -1,0 +1,30 @@
+{
+    "last_updated": "2023-10-01T12:00:00Z",
+    "run_start": "2023-10-01T12:00:00Z",
+    "run_end": "2027-10-01T12:00:00Z",
+    "title": "Constitution Voting, Representative Elections, and More",
+    "description": "Help steer the Undergraduate Student Government's future by voting as an undergraduate!",
+    "icon": "thumbs_up_down",
+    "color": "var(--usg-secondary)",
+    "background_color": "var(--usg-primary)",
+    "buttons": [
+        {
+            "text": "Vote in Your Representatives",
+            "url": "https://usg.mtu.edu/current-election",
+            "icon": "face",
+            "color": ""
+        },
+        {
+            "text": "Constitution Amendments",
+            "url": "https://usg.mtu.edu/vote",
+            "icon": "edit_document",
+            "color": ""
+        },
+        {
+            "text": "RSO Voting Competition",
+            "url": "https://usg.mtu.edu/vote",
+            "icon": "trophy",
+            "color": ""
+        }
+    ]
+}

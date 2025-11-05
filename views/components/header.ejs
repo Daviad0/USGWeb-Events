@@ -1,0 +1,77 @@
+<div class="heading">
+    <img src="Crest_edited.png" alt="Crest" class="crest" onclick="goHome()"/>
+    <div class="text-content">
+        <% if (session.user_info && session.user_info.access == 'admin') { %>
+            <button onclick="window.location.href = '/internal'">
+                <span class="medium">Home</span>
+            </button>
+            <button onclick="window.location.href = 'profile'">
+                <span class="medium">My Profile</span>
+            </button>
+            <button onclick="window.location.href = 'profiles'">
+                <span class="medium">All Profiles*</span>
+            </button>
+            <button onclick="window.location.href = 'access'">
+                <span class="medium">Members*</span>
+            </button>
+            <button onclick="window.location.href = 'navigation'">
+                <span class="medium">Navigation Menu Manage</span>
+            </button>
+        <% } else if (session.user_info && (session.user_info.access == 'admin' || session.user_info.access == 'member')) { %>
+            <button onclick="window.location.href = ''">
+                <span class="medium">Home</span>
+            </button>
+            <button onclick="window.location.href = 'profile'">
+                <span class="medium">My Profile</span>
+            </button>
+        <% } else { %>
+            <span class="medium"><i>You are not logged in</i></span>
+
+        <% } %>
+    </div>
+    <div class="buttons">
+        <% if(!session || !session.user) { %>
+            <button class="hover-button" onclick="window.location.href = '/internal/authenticate'">
+                <span class="material-symbols-outlined">person</span>
+                <div class="sub">
+                    <span class="background medium">Log In</span>
+                </div>
+            </button>
+        <% } else { %>
+            <span class="large"><%= session.user %></span>
+            <% if(session.user_info.access == 'admin') { %>
+                <!-- <button class="hover-button">
+                    <span class="material-symbols-outlined">tune</span>
+                    <div class="sub">
+                        <span class="background medium">Settings</span>
+                    </div>
+                </button> -->
+                <span class="large">*</span>
+            <% } %>
+            <% if(session.accessLevel == 'none') { %>
+                <span class="large">
+                    <span title="You do not have access to the internal USG application" class="material-symbols-outlined">warning</span>
+                </span>
+            <% } %>
+            <button class="hover-button" onclick="window.location.href = '/internal/logout'">
+                <span class="material-symbols-outlined">key</span>
+                <div class="sub">
+                    <span class="background medium">Log Out</span>
+                </div>
+            </button>
+        <% } %>
+    </div>
+</div>
+
+<script>
+    function testLogin(){
+        // We want to get JSON about the login request... 
+        // This is for test CAS only...
+
+        
+    }
+
+    function goHome(){
+        window.location.href = 'https://usg.mtu.edu';
+    }
+</script>

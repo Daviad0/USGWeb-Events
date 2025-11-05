@@ -1,0 +1,173 @@
+<style>
+    .position-element{
+        padding:40px 20px;
+        
+    }
+    
+    .position-element span{
+        display: block;
+        text-align: center;
+    }
+    
+    .position-element img{
+        width: 100%;
+        margin-top: 20px;
+        border-radius: 10px;
+    }
+    
+    .position-element button{
+        margin-top: 10px;
+    }
+    
+    .flex-center{
+        display:flex;
+        justify-content: center;
+        align-items:center;
+        flex-wrap: wrap;
+    }
+    
+    .flex-center .col1{
+        width: 30%;
+        min-width: 200px;
+        max-width: 350px;
+        
+    }
+    
+    .flex-center .col2{
+        width: 20px;
+    }
+    
+    .flex-center .col3{
+        width: 40%;
+        min-width: 400px;
+    }
+
+    .bg-profile-primary {
+        background-color: #ffcd00;
+        color: black;
+    }
+
+    .bg-profile-secondary {
+        background-color: #000000;
+        color: white;
+    }
+</style>
+
+<% profiles.forEach(profile => { %>
+    <% 
+    let bgClass = ["#ffcd00", "white"]; 
+    let bgColor = ["black", "black"];
+    let buttonClass = ["button-variant-secondary", "button-variant-primary"];
+    let bgIndex = 0;
+    if(profile.alternate && profile.alternate == true) { 
+        bgIndex += 1;
+    } 
+    try{
+        if(alternate){
+            bgIndex += 1;
+        }
+    }catch(e){}
+    
+    bgClass = bgClass[bgIndex % bgClass.length];
+    bgColor = bgColor[bgIndex % bgColor.length];
+    buttonClass = buttonClass[bgIndex % buttonClass.length];
+    %>
+
+    <div class="position-element flex-center" style="background-color:<%- bgClass %>;color:<%- bgColor %>" name="<%- profile.position %>">
+        <div class="col1">
+            <span style="font-size: 2.5em;font-weight:bold;margin-bottom: 4px;" name="name"><%- profile.name %></span>
+            <span style="font-size: 1.5em;" name="position"><%- profile.position %></span>
+            <img src="<%- profile.photo %>" name="photo">
+        </div>
+        <div class="col2"></div>
+        <div class="col3">
+            <div name="description">
+                <% if(profile.pronouns && profile.pronouns != "") {%><span style="font-size: 1.7em;margin-bottom: 4px;"><strong>Pronouns:</strong> <%- profile.pronouns %></span>
+                <% } %>
+                <% if(profile.from && profile.from != ""){  %><span style="font-size: 1.7em;margin-bottom: 4px"><strong>Hometown:</strong> <%- profile.from %></span>
+                <% } %>
+                <% if(profile.quote && profile.quote != "") {%><span style="font-size: 1.7em;margin-bottom: 4px"><strong>Quote:</strong> <%- profile.quote %></span>
+                <% } %>
+                <% if(profile.clubs && profile.clubs != "") {%><span style="font-size: 1.7em;margin-bottom: 4px"><strong>Other Organizations:</strong> <%- profile.clubs %></span>
+                <% } %>
+                <% if(profile.major && profile.major != "") {%><span style="font-size: 1.7em;margin-bottom: 4px"><strong>Major / Minor:</strong> <%- profile.major %></span>
+                <% } %>
+                <% if(profile.committees && profile.committees != "") {%><span style="font-size: 1.7em;margin-bottom: 4px"><strong>Committee:</strong> <%- profile.committees %></span>
+                <% } %>
+
+            </div>
+            <div class="flex-center">
+                <button name="contact" onclick="window.location.href = 'mailto:<%- profile.email %>';" class="button <%- buttonClass %>">Contact</button>
+            </div>
+            
+        </div>
+    </div>
+
+<% }); %>
+
+
+
+<!-- <script>
+    let keyMappings = {
+        "pronouns": "Pronouns",
+        "from": "Hometown",
+        "quote": "Quote",
+        "clubs": "Other Organizations",
+        "major": "Major / Minor",
+        "committees": "Committees"
+    }
+    let position = "<%- position %>";
+
+    function tryFetch(){
+        try {
+            fetch(`/internal/api/profile?positions=${position}`).then(async (res) => {
+                let data = await res.json();
+                if (data.length == 0) {
+                    // document.querySelector("[name='president']").style.display = "none";
+                } else {
+                    let target = data[0];
+
+                    let element = document.querySelector(`[name='${position}']`);
+
+                    // if (target["photo"]) {
+                    //     element.querySelector("[name='photo']").src = target["photo"];
+                    // }
+                    if (target["name"]) {
+                        element.querySelector("[name='name']").innerHTML = target["name"];
+                    }
+                    if (target["data"]) {
+                        let JSONobject = JSON.parse(target["data"]);
+                        let descriptionElement = element.querySelector("[name='description']");
+                        Object.keys(JSONobject).forEach(key => {
+                            if(key == "photo"){
+                                element.querySelector("[name='photo']").src = JSONobject[key];
+                                return;
+                            }
+                            if(key == "contact"){
+                                let contactButton = element.querySelector("[name='contact']");
+                                contactButton.onclick = () => {
+                                    window.location.href = "mailto:" + JSONobject[key];
+                                }
+                                return;
+                            }
+                            
+                            let value = JSONobject[key];
+
+                            // if not in keyMappings, skip
+                            if(!keyMappings[key]){
+                                console.warn(`Key "${key}" not found in keyMappings, skipping.`);
+                                return;
+                            }
+
+                            descriptionElement.innerHTML += `<span style="font-size: 2em"><strong>${keyMappings[key]}:</strong> ${value}</span>`
+                        }
+                        );
+                    }
+                }
+            }
+            );
+        } catch (e) {
+        }
+    }
+    
+</script> -->

@@ -1,0 +1,362 @@
+<%- include('components/common') %>
+<%- include('components/header', { session: session }) %>
+
+
+<div class="content">
+    <br/>
+
+    <div class="flex-center">
+        <span class="huge">Manage All Elections</span>
+    </div>
+    <br/>
+
+    <hr/>
+    <br/>
+
+    <div>
+        <span class="medium">Add Election</span>
+        <div class="flex-center">
+            <div name="members">
+                <div name="add-member" class="flex-center">
+                    <input type="text" placeholder="URL" id="election_url" />
+                </div>
+            </div>
+            <button id="add" class="flex-center">
+                <span class="background small">Add</span>
+            </button>
+        </div>
+    </div>
+    <br/>
+
+    <div>
+        <div class="flex-center">
+            <div class="election" data-url="https://involvement.mtu.edu">
+                <div class="flex-apart">
+                    <div class="flex-center">
+                        <span class="medium">Election URL</span>
+                        
+
+                    </div>
+                    <input class="small" style="width:50%;" type="text" placeholder="Election URL" name="election-url" value="https://involvement.mtu.edu" disabled/>
+                </div>
+                <div class="flex-apart">
+                    <div class="flex-center">
+                        <span class="medium">Election Title</span>
+                        
+
+                    </div>
+                    <input class="small" style="width:50%;" type="text" onchange="editElection('')" placeholder="Election Title" name="election-title" value="MTU Student Election"/>
+                </div>
+                <div class="flex-apart">
+                    <div class="flex-center">
+                        <span class="medium">Election Description</span>
+                        
+
+                    </div>
+                    <input class="small" style="width:50%;" type="text" onchange="editElection('')" placeholder="Election Description" name="election-description" value="MTU Student Election Description"/>
+                </div>
+                <div class="flex-apart" style="margin-top: 10px">
+                    <div class="flex-center" style="gap: 5px">
+                        <span class="material-symbols-outlined medium">check_box</span>
+                        <span class="medium">Election Selected</span>
+                    </div>
+                    <div class="flex-center" style="gap:5px">
+                        <button class="hover-button flex-center bg-success" onclick="selectElection()">
+                            <span class="material-symbols-outlined small">bucket_check</span>
+                            <div class="sub">
+                                <span class="background small">Toggle Select</span>
+                            </div>
+                        </button>
+                        <button class="hover-button flex-center" onclick="window.location.href='/internal/election'">
+                            <span class="material-symbols-outlined small">edit</span>
+                            <div class="sub">
+                                <span class="background small">Edit</span>
+                            </div>
+                        </button>
+                        <button class="hover-button flex-center bg-error" onclick="removeElection()">
+                            <span class="material-symbols-outlined small">delete_forever</span>
+                            <div class="sub">
+                                <span class="background small">Delete</span>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- <span class="medium">Add Members</span>
+        <div class="flex-center align-end">
+            <div name="members">
+                <div style="display:none" id="add-member-template" class="flex-center">
+                    <input type="text" placeholder="Username" />
+                    <select>
+                        <option value="user">User</option>
+                        <option value="admin">Admin</option>
+                    </select>
+                </div>
+                <div name="add-member" class="flex-center">
+                    <input type="text" placeholder="Username" />
+                    <select>
+                        <option value="user">User</option>
+                        <option value="admin">Admin</option>
+                    </select>
+                </div>
+            </div>
+            <button id="add" class="flex-center">
+                <span class="background small">Add</span>
+            </button>
+            <button id="append" class="flex-center">
+                <span class="background small">+</span>
+            </button>
+        </div> -->
+    </div>
+    <br/>
+</div>
+
+<script>
+    // function addProfileForUser(username){
+    //     document.getElementById('username').value = username;
+    //     addProfile();
+    // }
+
+    // function addProfile(){
+
+    //     let usernames = document.getElementsByName('profile-username');
+    //     let found = false;
+
+    //     for(let i = 0; i < usernames.length; i++){
+    //         if(usernames[i].innerText == document.getElementById('username').value){
+    //             found = true;
+    //             break;
+    //         }
+    //     }
+
+    //     if(found){
+    //         alert("Profile already exists");
+    //         return;
+    //     }
+
+    //     let contactObj = {
+    //         email: document.getElementById('username').value + '@mtu.edu',
+    //         hours: "",
+    //         text: "Contact Me"
+    //     };
+
+    //     post('/internal/api/profile', {
+    //         username: document.getElementById('username').value,
+    //         contact: JSON.stringify(contactObj),
+    //     }).then(res => {
+    //         window.location.reload();
+    //     }).catch(err => {
+    //         alert("Error adding profile");
+    //     });
+    // }
+
+    function addElection(){
+        let url = document.getElementById('election_url').value;
+
+        if(!url){
+            alert("Please enter a valid URL");
+            return;
+        }
+
+        post('/internal/api/election', {
+            url: url
+        }).then(res => {
+            window.location.reload();
+        }).catch(err => {
+            alert("Error adding election");
+        });
+    }
+
+    function removeElection(){
+        let url = document.getElementById('election_url').value;
+
+        if(!url){
+            alert("Please enter a valid URL");
+            return;
+        }
+
+        post('/internal/api/election', {
+            url: url,
+            delete: true
+        }).then(res => {
+            window.location.reload();
+        }).catch(err => {
+            alert("Error removing election");
+        });
+    }
+
+    function editElection(url){
+        if(!url || !name){
+            return;
+        }
+
+        let useUrl = url;
+        let useDescription = document.querySelector(`.election[data-url="${url}"] input[name="election-description"]`).value;
+        let useTitle = document.querySelector(`.election[data-url="${url}"] input[name="election-title"]`).value;
+
+        post('/internal/api/election', {
+            url: useUrl,
+            title: useTitle,
+            description: useDescription
+        }).then(res => {
+            print("Election updated successfully");
+        }).catch(err => {
+            alert("Error updating election");
+        });
+
+    }
+
+    // function removeProfile(username){
+    //     post('/internal/api/profile', {
+    //         username: username,
+    //         delete: true
+    //     }).then(res => {
+    //         document.querySelector(`.member[data-username="${username}"]`).remove();
+    //     }).catch(err => {
+    //         alert("Error removing profile");
+    //     });
+
+    //     updateCounts();
+    // }
+    // function updateCounts(){
+    //     let counts = {
+    //         hide: 0,
+    //         bad: 0,
+    //         review: 0,
+    //         ok: 0
+    //     };
+
+    //     let statuses = document.querySelectorAll('.member select[name="status"]');
+    //     statuses.forEach(s => {
+    //         counts[s.value]++;
+    //     });
+
+    //     document.querySelector('.status-bar .status.left').classList.remove('selected');
+    //     document.querySelector('.status-bar .status:nth-child(2)').classList.remove('selected');
+    //     document.querySelector('.status-bar .status:nth-child(3)').classList.remove('selected');
+    //     document.querySelector('.status-bar .status.right').classList.remove('selected');
+
+    //     document.querySelector('.status-bar .status.left').innerText = `${counts.hide} - Hidden`;
+    //     document.querySelector('.status-bar .status:nth-child(2)').innerText = `${counts.bad} - Pending Edits`;
+    //     document.querySelector('.status-bar .status:nth-child(3)').innerText = `${counts.review} - Under Review`;
+    //     document.querySelector('.status-bar .status.right').innerText = `${counts.ok} - OK`;
+
+    //     if(counts.hide > 0){
+    //         document.querySelector('.status-bar .status.left').classList.add('selected');
+    //     }
+    //     if(counts.bad > 0){
+    //         document.querySelector('.status-bar .status:nth-child(2)').classList.add('selected');
+    //     }
+    //     if(counts.review > 0){
+    //         document.querySelector('.status-bar .status:nth-child(3)').classList.add('selected');
+    //     }
+    //     if(counts.ok > 0){
+    //         document.querySelector('.status-bar .status.right').classList.add('selected');
+    //     }
+
+
+    // }
+
+    // function editDescription(prop, username){
+    //     let propValue = document.querySelector(`.member[data-username="${username}"] input[name="${prop}"]`).value;
+    //     let description = document.querySelector(`.member[data-username="${username}"] input[name="description"]`).value;
+
+    //     if(!description){
+    //         description = {};
+    //     }else{
+    //         description = JSON.parse(description);
+    //     }
+
+    //     description[prop] = propValue;
+
+    //     document.querySelector(`.member[data-username="${username}"] input[name="description"]`).value = JSON.stringify(description);
+
+    //     post('/internal/api/profile', {
+    //         username: username,
+    //         data: JSON.stringify(description)
+    //     }).then(res => {
+    //         // document.querySelector(`.member[data-username="${username}"] input[name="description"]`).value = JSON.stringify({committees: committees});
+    //     }).catch(err => {
+    //         alert(`Error updating ${prop}`);
+    //     });
+    // }
+
+    // function parseDescriptions(){
+    //     let members = document.querySelectorAll('.member');
+
+    //     Array.from(members).forEach(m => {
+    //         let committees = m.querySelector('input[name="committees"]');
+    //         let description = m.querySelector('input[name="description"]');
+    //         let photo = m.querySelector('input[name="photo"]');
+
+    //         if(!committees || !description || !photo){
+    //             return;
+    //         }
+
+    //         description = description.value;
+    //         if(!description){
+    //             return;
+    //         }
+    //         description = JSON.parse(description);
+
+    //         if(description.committees){
+    //             committees.value = description.committees
+    //         }else{
+    //             committees.value = "";
+    //         }
+
+    //         if(description.photo){
+    //             photo.value = description.photo;
+    //         }else{
+    //             photo.value = "";
+    //         }
+    //     });
+    // }
+
+    // updateCounts();
+    // parseDescriptions();
+
+
+    // function editProfile(username, name){
+    //     let value = document.querySelector(`.member[data-username="${username}"] [name="${name}"]`);
+
+    //     if(!value){
+    //         return;
+    //     }
+
+    //     value = value.value;
+
+    //     let data = {};
+    //     data.username = username;
+    //     data[name] = value;
+
+    //     post('/internal/api/profile', data).then(res => {
+    //         if(name == 'status'){
+    //             document.querySelector(`.member[data-username="${username}"] select[name="status"]`).classList.remove('bg-error');
+    //             document.querySelector(`.member[data-username="${username}"] select[name="status"]`).classList.remove('bg-success');
+    //             document.querySelector(`.member[data-username="${username}"] select[name="status"]`).classList.remove('bg-secondary');
+
+    //             if(['hide', 'bad'].includes(value)){
+    //                 document.querySelector(`.member[data-username="${username}"] select[name="status"]`).classList.add('bg-error');
+    //             } else if(value == 'review'){
+    //                 document.querySelector(`.member[data-username="${username}"] select[name="status"]`).classList.add('bg-secondary');
+    //             } else {
+    //                 document.querySelector(`.member[data-username="${username}"] select[name="status"]`).classList.add('bg-success');
+    //             }
+
+    //             updateCounts();
+    //         } 
+    //     }).catch(err => {
+    //         alert("Error updating profile");
+    //         window.location.reload();
+    //     });
+    // }
+
+
+    // document.getElementById('add').addEventListener('click', addProfile);
+
+
+
+</script>

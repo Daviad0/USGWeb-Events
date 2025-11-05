@@ -1,0 +1,27 @@
+<%- include('components/common') %>
+<%- include('components/header', { session: session }) %>
+
+<div class="content">
+    <br/>
+    <div class="flex-center flex-column">
+        <% if (session.user_info && session.user_info.access == 'admin') { %>
+            <button class="flex-center list" id="publish" onclick="window.location.href='break-bus'">
+                <span class="material-symbols-outlined">directions_bus</span>
+                <span class="background medium">Break Bus</span>
+            </button>
+            <button class="flex-center list" id="publish" onclick="window.location.href='profiles'">
+                <span class="material-symbols-outlined">groups_3</span>
+                <span class="background medium">Profiles</span>
+            </button>
+            <button class="flex-center list" id="publish" onclick="window.location.href='access'">
+                <span class="material-symbols-outlined">id_card</span>
+                <span class="background medium">Members</span>
+            </button>
+            <button class="flex-center list" id="publish" onclick="window.location.href='navigation'">
+                <span class="material-symbols-outlined">navigation</span>
+                <span class="background medium">Nav Menu</span>
+            </button>
+            <% } %>
+    </div>
+    
+</div>

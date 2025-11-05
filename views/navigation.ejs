@@ -1,0 +1,598 @@
+<%- include('components/common') %>
+<%- include('components/header', { session: session }) %>
+
+<style>
+    .menu{
+        overflow-y: hidden;
+        max-height: 0px;
+        padding: 0px 20px;
+        transition: all .5s ease-in-out;
+    }
+    
+    .menu.open{
+        max-height: 1000px;
+        padding: 20px 20px;
+    }
+
+    .large-option{
+        font-size: 1.5em;
+        font-weight: 700;
+        display: block;
+        color: white;
+        margin-top: 5px;
+        text-align: left;
+        text-decoration: none;
+    }
+    
+    .small-option{
+        font-size: 1em;
+        display: block;
+        color: white;
+        text-align: left;
+        text-decoration: none;
+    }
+    
+    .small-option.special{
+        background-color: white;
+        padding: 3px 6px;
+        border-radius: 4px;
+        margin: 3px 0px;
+        color: white;
+    }
+    
+    #ed-497178535{
+        transition: all .5s ease-in-out !important;
+    }
+</style>
+
+<div class="content">
+    <br/>
+
+    <div class="flex-center">
+        <span class="huge">USG Website Navigation Editor</span>
+    </div>
+    <div class="flex-center">
+        <span class="medium"><i id="nav-version">Receiving Version from Website...</i></span>
+    </div>
+    <div class="flex-center" style="gap:5px">
+        <button class="hover-button flex-center" id="publish">
+            <span class="material-symbols-outlined">save</span>
+            <div class="sub">
+                <span class="background medium">Publish</span>
+            </div>
+        </button>
+        <button class="hover-button flex-center" id="download">
+            <span class="material-symbols-outlined">download</span>
+            <div class="sub">
+                <span class="background medium">Download</span>
+            </div>
+        </button>
+        <button class="hover-button flex-center" id="upload">
+            <span class="material-symbols-outlined">upload_file</span>
+            <div class="sub">
+                <span class="background medium">Upload</span>
+            </div>
+        </button>
+        <button class="hover-button flex-center" id="preview">
+            <span class="material-symbols-outlined">visibility</span>
+            <div class="sub">
+                <span class="background medium">Preview</span>
+            </div>
+        </button>
+    </div>
+    
+
+    <br/>
+    <div id="main-menu" class="bg-secondary menu" style="display:flex;justify-content:center;flex-wrap: wrap">
+        <div style="width:30%;min-width: 300px" id="main-menu-col1">
+            
+        </div>
+        <div style="width:30%;min-width: 300px" id="main-menu-col2">
+            
+        </div>
+    </div>
+    <hr/>
+    <br/>
+
+    <div id="existing-segments">
+        
+
+    </div>
+
+    <div class="flex-center">
+        <button id="add-category" class="hover-button flex-center">
+            <span class="material-symbols-outlined">add</span>
+            <div class="sub">
+                <span class="background medium">Add Category</span>
+            </div>
+        </button>
+    </div>
+    
+
+    
+</div>
+
+<script>
+    let structure = {};
+    var uuidErrors = [];
+
+    function getInitialStructure() {
+        fetch('/internal/nav_data.json')
+            .then(response => response.json())
+            .then(data => {
+                structure = data;
+                initializeView();
+            });
+    }
+
+    function uploadData(){
+        let input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.json';
+        input.onchange = (event) => {
+            let file = event.target.files[0];
+            let reader = new FileReader();
+            reader.onload = (event) => {
+                let data = JSON.parse(event.target.result);
+
+                // check if data has a version
+                if(data.version == undefined){
+                    alert('Data does not have a version. Invalid file!');
+                    return;
+                }
+
+                structure = data;
+                initializeView();
+            }
+            reader.readAsText(file);
+        }
+        input.click();
+    }
+
+    function downloadData(){
+
+        let version = structure.version;
+        // format version as YYYY.MM.DD.HH.MM
+        let date = new Date();
+        let year = date.getFullYear();
+        let month = date.getMonth() + 1;
+        let day = date.getDate();
+        let hours = date.getHours();
+        let minutes = date.getMinutes();
+        let formattedVersion = `${year}.${month.toString().padStart(2, "0")}.${day.toString().padStart(2, "0")}.${hours.toString().padStart(2, "0")}.${minutes.toString().padStart(2, "0")}`;
+        structure.version = formattedVersion;
+
+        let data = JSON.stringify(structure);
+        let blob = new Blob([data], {type: 'application/json'});
+        let url = URL.createObjectURL(blob);
+        let a = document.createElement('a');
+        a.href = url;
+        a.download = 'nav_data.json';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+    }
+
+    function addCategory(){
+        let category = {
+            uuid: generateUUID(),
+            name: '',
+            link: '',
+            links: []
+        };
+
+        structure.categories.push(category);
+        renderCategory(category);
+    }
+
+    function addLink(categoryUUID){
+        let link = {
+            uuid: generateUUID(),
+            title: '',
+            link: '',
+            special: undefined
+        };
+
+        let category = structure.categories.find(category => category.uuid == categoryUUID);
+        category.links.push(link);
+        renderLink(link, categoryUUID);
+    }
+
+    var inputmapping = {
+        'link-name': 'title',
+        'link-url': 'link',
+        'link-color': 'special'
+    }
+
+    function editLink(linkUUID, name){
+        let main_menu = document.getElementById("main-menu");
+        if(main_menu.classList.contains("open")){
+            main_menu.classList.remove("open");
+            document.getElementById("preview").style.opacity = 1;
+        }
+        let category = structure.categories.find(category => category.links.find(link => link.uuid == linkUUID));
+        let link = category.links.find(link => link.uuid == linkUUID);
+        
+        let element = document.querySelector(`.link[data-uuid="${linkUUID}"] input[name="${name}"]`);
+        let mapping = inputmapping[name];
+        link[mapping] = element.value;
+        element.classList.remove('error');
+        uuidErrors = uuidErrors.filter(uuid => uuid != linkUUID + "_" + mapping);
+        if(link[mapping] == ''){
+            if(['title', 'link'].includes(mapping)){
+                element.classList.add('error');
+                uuidErrors.push(linkUUID + "_" + mapping);
+            }
+            
+        }
+
+        if(link[mapping] == "#ffffff" && mapping == 'special'){
+            link[mapping] = undefined;
+        }
+        checkForErrors();
+    }
+
+    var categoryInputMapping = {
+        'category-name': 'name',
+        'category-url': 'link'
+    }
+
+    function editCategory(categoryUUID, name){
+
+        let main_menu = document.getElementById("main-menu");
+        if(main_menu.classList.contains("open")){
+            main_menu.classList.remove("open");
+            document.getElementById("preview").style.opacity = 1;
+        }
+        let category = structure.categories.find(category => category.uuid == categoryUUID);
+        
+        let element = document.querySelector(`.category[data-uuid="${categoryUUID}"] input[name="${name}"]`);
+        let mapping = categoryInputMapping[name];
+        category[mapping] = element.value;
+        element.classList.remove('error');
+        uuidErrors = uuidErrors.filter(uuid => uuid != categoryUUID + "_" + mapping);
+        if(category[mapping] == ''){
+            if(['name'].includes(mapping)){
+                element.classList.add('error');
+                uuidErrors.push(categoryUUID + "_" + mapping);
+            }
+            if(mapping == 'link'){
+                category[mapping] = undefined;
+            }
+        }
+        checkForErrors();
+    }
+
+    function checkForErrors(){
+        let download = document.getElementById('download');
+        let publish = document.getElementById('publish');
+        if(uuidErrors.length > 0){
+            download.disabled = true;
+            publish.disabled = true;
+            download.classList.add('bg-error');
+            publish.classList.add('bg-error');
+        } else {
+            download.disabled = false;
+            publish.disabled = false;
+            download.classList.remove('bg-error');
+            publish.classList.remove('bg-error');
+        }
+    }
+
+    function removeLink(linkUUID){
+        let category = structure.categories.find(category => category.links.find(link => link.uuid == linkUUID));
+        let linkIndex = category.links.findIndex(link => link.uuid == linkUUID);
+        category.links.splice(linkIndex, 1);
+
+        let linkElement = document.querySelector(`.link[data-uuid="${linkUUID}"]`);
+        linkElement.remove();
+    }
+
+    function removeCategory(categoryUUID){
+        let categoryIndex = structure.categories.findIndex(category => category.uuid == categoryUUID);
+        structure.categories.splice(categoryIndex, 1);
+
+        let categoryElement = document.querySelector(`.category[data-uuid="${categoryUUID}"]`);
+        categoryElement.remove();
+    }
+
+    function moveLink(linkUUID, direction){
+        let category = structure.categories.find(category => category.links.find(link => link.uuid == linkUUID));
+        let linkIndex = category.links.findIndex(link => link.uuid == linkUUID);
+
+        if(direction == 'up' && linkIndex > 0){
+            let temp = category.links[linkIndex - 1];
+            category.links[linkIndex - 1] = category.links[linkIndex];
+            category.links[linkIndex] = temp;
+        } else if(direction == 'down' && linkIndex < category.links.length - 1){
+            let temp = category.links[linkIndex + 1];
+            category.links[linkIndex + 1] = category.links[linkIndex];
+            category.links[linkIndex] = temp;
+        }
+
+        let linkElement = document.querySelector(`.link[data-uuid="${linkUUID}"]`);
+        let linksElement = linkElement.parentElement;
+        linksElement.innerHTML = '';
+
+        category.links.forEach(link => {
+            renderLink(link, category.uuid);
+        });
+    }
+
+    function moveCategory(categoryUUID, direction){
+        let categoryIndex = structure.categories.findIndex(category => category.uuid == categoryUUID);
+
+        if(direction == 'up' && categoryIndex > 0){
+            let temp = structure.categories[categoryIndex - 1];
+            structure.categories[categoryIndex - 1] = structure.categories[categoryIndex];
+            structure.categories[categoryIndex] = temp;
+        } else if(direction == 'down' && categoryIndex < structure.categories.length - 1){
+            let temp = structure.categories[categoryIndex + 1];
+            structure.categories[categoryIndex + 1] = structure.categories[categoryIndex];
+            structure.categories[categoryIndex] = temp;
+        }
+
+        let categoryElement = document.querySelector(`.category[data-uuid="${categoryUUID}"]`);
+        let existingSegments = document.getElementById('existing-segments');
+        existingSegments.innerHTML = '';
+
+        structure.categories.forEach(category => {
+            renderCategory(category);
+        });
+    }
+
+    function renderLink(link, categoryUUID){
+
+        if(link.uuid == undefined){
+            link.uuid = generateUUID();
+        }
+
+        let divToAdd = document.createElement('div');
+        divToAdd.classList.add('link');
+        divToAdd.classList.add('flex-apart');
+        divToAdd.setAttribute('data-uuid', link.uuid);
+
+        divToAdd.innerHTML = `
+        <div>
+            <label>Link Name*</label>
+            <input onchange="editLink('${link.uuid}', 'link-name')" name="link-name" type="text" placeholder="Name" value="${link.title}" />
+        </div>
+        <div>
+            <label>Link URL*</label>
+            <input onchange="editLink('${link.uuid}', 'link-url')" name="link-url" type="text" placeholder="/url" value="${link.link}" />
+        </div>
+        <div>
+            <label>Color</label>
+            <input onchange="editLink('${link.uuid}', 'link-color')" name="link-color" type="color" value="${link.special}" />
+        </div>
+        <div class="flex-center" class="flex-1">
+            <button class="hover-button flex-center" onclick="moveLink('${link.uuid}', 'up')">
+                <span class="material-symbols-outlined small">arrow_upward</span>
+                <div class="sub">
+                    <span class="background small">Move Up</span>
+                </div>
+            </button>
+            <button class="hover-button flex-center" onclick="moveLink('${link.uuid}', 'down')">
+                <span class="material-symbols-outlined small">arrow_downward</span>
+                <div class="sub">
+                    <span class="background small">Move Down</span>
+                </div>
+            </button>
+            <button class="hover-button bg-error flex-center" onclick="removeLink('${link.uuid}')">
+                <span class="material-symbols-outlined small">close</span>
+                <div class="sub">
+                    <span class="background small">Remove</span>
+                </div>
+            </button>
+        </div>
+        `
+
+        let categoryElement = document.querySelector(`.category[data-uuid="${categoryUUID}"] .links`);
+        categoryElement.appendChild(divToAdd);
+    }
+
+    function renderCategory(category){
+
+        if(category.uuid == undefined){
+            category.uuid = generateUUID();
+        }
+
+        let divToAdd = document.createElement('div');
+        divToAdd.classList.add('flex-center');
+
+        if(category.link == undefined || category.link == 'undefined'){
+            category.link = '';
+        }
+
+
+        divToAdd.innerHTML = `
+        <div class="segment category" data-uuid="${category.uuid}">
+            <div class="flex-apart">
+                <div>
+                    <label>Category Name*</label>
+                    <input onchange="editCategory('${category.uuid}', 'category-name')" name="category-name" type="text" placeholder="Name" value="${category.name}" />
+
+                </div>
+                <div class="flex-center">
+                    <div>
+                        <label>Category URL</label>
+                        <input onchange="editCategory('${category.uuid}', 'category-url')" name="category-url" type="text" placeholder="/url" value="${category.link}" />
+
+                    </div>
+                </div>
+            </div>
+            <label>Attached Links</label>
+            <div class="links-container">
+                <div class="links">
+                
+                </div>
+                <div class="flex-apart">
+                    <div></div>
+                    <div class="flex-center">
+                        <button class="hover-button flex-center" onclick="addLink('${category.uuid}')">
+                            <span class="material-symbols-outlined small">add_link</span>
+                            <div class="sub">
+                                <span class="background small">Add Link</span>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="flex-apart">
+                <div></div>
+                <div class="flex-center" class="flex-1">
+                    <button class="hover-button flex-center" onclick="moveCategory('${category.uuid}', 'up')">
+                        <span class="material-symbols-outlined small">arrow_upward</span>
+                        <div class="sub">
+                            <span class="background small">Move Up</span>
+                        </div>
+                    </button>
+                    <button class="hover-button flex-center" onclick="moveCategory('${category.uuid}', 'down')">
+                        <span class="material-symbols-outlined small">arrow_downward</span>
+                        <div class="sub">
+                            <span class="background small">Move Down</span>
+                        </div>
+                    </button>
+                    <button class="hover-button bg-error flex-center" onclick="removeCategory('${category.uuid}')">
+                        <span class="material-symbols-outlined small">close</span>
+                        <div class="sub">
+                            <span class="background small">Remove</span>
+                        </div>
+                    </button>
+                </div>
+            </div>
+        </div>
+        `
+
+
+        let existingSegments = document.getElementById('existing-segments');
+
+        existingSegments.appendChild(divToAdd);
+
+        category.links.forEach(link => {
+            renderLink(link, category.uuid);
+        });
+    }
+
+    function generateUUID() {
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+            var r = Math.random() * 16 | 0,
+                v = c == 'x' ? r : (r & 0x3 | 0x8);
+            return v.toString(16);
+        });
+    }
+
+    function initializeView(){
+        let navVersion = document.getElementById('nav-version');
+        navVersion.innerHTML = `Version: ${structure.version}`;
+
+        structure.categories.forEach(category => {
+            renderCategory(category);
+        });
+    }
+
+    function publish(){
+
+        // format version as YYYY.MM.DD.HH.MM
+        let date = new Date();
+        let year = date.getFullYear();
+        let month = date.getMonth() + 1;
+        let day = date.getDate();
+        let hours = date.getHours();
+        let minutes = date.getMinutes();
+        let formattedVersion = `${year}.${month.toString().padStart(2, "0")}.${day.toString().padStart(2, "0")}.${hours.toString().padStart(2, "0")}.${minutes.toString().padStart(2, "0")}`;
+        structure.version = formattedVersion;
+
+
+        document.getElementById('publish').disabled = true;
+
+        post('/internal/api/navigation', {
+            navigation: JSON.stringify(structure)
+        })
+            .then(() => {
+                alert('Published successfully!');
+                location.reload();
+            })
+            .catch((err) => {
+                alert('An error occurred: ' + err);
+            });
+    }
+
+    document.getElementById('publish').addEventListener('click', publish);
+    document.getElementById('upload').addEventListener('click', uploadData);
+    document.getElementById('download').addEventListener('click', downloadData);
+
+    document.getElementById('add-category').addEventListener('click', addCategory);
+
+    getInitialStructure();
+
+</script>   
+
+<script>
+    var main_menu = document.getElementById("main-menu");
+    var plus_elem = document.getElementById("preview")
+    plus_elem.addEventListener("click", () => {
+        if(main_menu.classList.contains("open")){
+            main_menu.classList.remove("open");
+            plus_elem.style.opacity = 1;
+        }else{
+
+            let data = structure;
+            var div1 = document.getElementById("main-menu-col1");
+            var div2 = document.getElementById("main-menu-col2");
+            
+            div1.innerHTML = "";
+            div2.innerHTML = "";
+
+            let categories = data["categories"];
+            
+            for(let i = 0; i < categories.length; i+=1){
+                
+                let category = categories[i];
+                
+                
+                let categoryHTML = `
+                
+                `
+                
+                if(category["link"]){
+                    categoryHTML = `<a target="_blank" href="https://usg.mtu.edu${(category["link"].startsWith("/") ? "" : "/") + category["link"]}" class="large-option primary">${category["name"]}</a>`
+                }else{
+                    categoryHTML = `<span class="large-option primary">${category["name"]}</span>`
+                }
+                
+                let links = category["links"];
+                for(let l = 0; l < links.length; l+=1){
+                    
+                    if(links[l]["special"]){
+                        // deserves a special background
+                        categoryHTML += `
+                    <a target="_blank" href="https://usg.mtu.edu${(links[l]["link"].startsWith("/") ? "" : "/") + links[l]["link"]}" class="small-option special" style="background-color:${links[l]["special"]}">${links[l]["title"]}</a>
+                    `
+                    }else{
+                        categoryHTML += `
+                    <a target="_blank" href="https://usg.mtu.edu${(links[l]["link"].startsWith("/") ? "" : "/") + links[l]["link"]}" class="small-option">${links[l]["title"]}</a>
+                    `
+                    }
+                    
+                    
+                }
+                
+                if(i % 2 == 0){
+                    div1.innerHTML += `
+                    ${categoryHTML}
+                    `
+                }else{
+                    div2.innerHTML += `
+                    ${categoryHTML}
+                    `
+                }
+            }
+
+            main_menu.classList.add("open");
+            plus_elem.style.opacity = 0.7;
+        }
+        
+    });
+</script>

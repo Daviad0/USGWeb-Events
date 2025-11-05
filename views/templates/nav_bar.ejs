@@ -1,0 +1,199 @@
+<style>
+    .menu {
+        overflow-y: hidden;
+        padding: 20px 20px;
+        transition: 0.5s ease-in-out;
+        background-color: black;
+    }
+
+    .menu.open {
+        max-height: 1000px;
+        padding: 20px;
+    }
+
+    .large-option {
+        font-size: 1.5em;
+        font-weight: 700;
+        display: block;
+        color: white;
+        margin-top: 8px;
+    }
+
+    .small-option {
+        font-size: 1em;
+        display: block;
+        color: white;
+    }
+
+    .small-option.special {
+        background-color: white;
+        padding: 3px 6px;
+        border-radius: 4px;
+        margin: 3px 0px;
+        color: white;
+    }
+
+    .login-banner{
+        background-color: #ffcd00;
+        padding: 10px;
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        align-items: center;
+    }
+
+    button.account-status-change{
+        background-color: black;
+        border:none;
+        border-radius: 8px;
+        padding: 5px 8px;
+        color: white;
+        cursor: pointer;
+    }
+
+    #ed-497178535 {
+        transition: 0.5s ease-in-out !important;
+    }
+</style>
+
+<div class="bg-primary login-banner">
+    <% if(!session || !session.user) { %>
+        <span>Not Logged In</span>
+        <button onclick="location.href='/internal/authenticate'" class="account-status-change">
+            <span>Log In</span>
+        </button>
+    <% } else { %>
+        <span>Logged in as <b><%- session.user %></b></span>
+        <button onclick="location.href='/internal/logout'" class="account-status-change">
+            <span>Log Out</span>
+        </button>
+        <% if(session.user_info && (session.user_info.access == 'admin' || session.user_info.access == 'member')) { %>
+            <button onclick="location.href='/internal'" class="account-status-change">
+                <span>Manage Internal</span>
+            </button>
+        <% } %>
+    <% } %>
+</div>
+
+<div class="bg-default menu" style="display:flex;justify-content:center;flex-wrap: wrap;gap:10px">
+    <div style="width:30%;min-width: 300px" id="main-menu-col1">
+        <!-- put first half of categories into first column -->
+        <% for(let i=0; i < Math.ceil(categories.length / 2); i++) { %>
+            <% if(categories[i].link) { %>
+                <a href="<%- categories[i].link %>" class="large-option color-primary"><%- categories[i].name %></a>
+                <% } else { %>
+                    <span class="large-option color-primary"><%- categories[i].name %></span>
+                    <% } %>
+                        <% for(let link of categories[i].links) { %>
+                            <% if(link.special) { %>
+                                <a href="<%- link.link %>" class="small-option special"
+                                    style="background-color:<%- link.special %>"><%- link.title %></a>
+                                <% } else { %>
+                                    <a href="<%- link.link %>" class="small-option special"
+                                        style="background-color:transparent"><%- link.title %></a>
+                                    <% } %>
+                                        <% } %>
+                                            <% } %>
+    </div>
+    <div style="width:30%;min-width: 300px" id="main-menu-col2">
+        <% for(let i=Math.ceil(categories.length / 2); i < categories.length; i++) { %>
+            <% if(categories[i].link) { %>
+                <a href="<%- categories[i].link %>" class="large-option color-primary"><%- categories[i].name %></a>
+                <% } else { %>
+                    <span class="large-option color-primary"><%- categories[i].name %></span>
+                    <% } %>
+                        <% for(let link of categories[i].links) { %>
+                            <% if(link.special) { %>
+                                <a href="<%- link.link %>" class="small-option special"
+                                    style="background-color:<%- link.special %>"><%- link.title %></a>
+                                <% } else { %>
+                                    <a href="<%- link.link %>" class="small-option special"
+                                        style="background-color:transparent"><%- link.title %></a>
+                                    <% } %>
+                                        <% } %>
+                                            <% } %>
+    </div>
+</div>
+
+
+<!-- <script>
+    var main_menu = document.getElemenRSO Information
+Elections
+Financing
+Student Activity Fee
+Reimbursements and Advancements
+Opportunity and Reserve Funds
+Contact Us
+asdasdsadtById("main-menu");
+    var plus_elem = document.querySelector("svg[data-icon='fa-regular-plus']").parentElement
+    plus_elem.addEventListener("click", () => {
+        if(main_menu.classList.contains("open")){
+            main_menu.classList.remove("open");
+            plus_elem.style.transform = "rotate(0deg)";
+        }else{
+            main_menu.classList.add("open");
+            plus_elem.style.transform = "rotate(45deg)";
+        }
+        
+    })
+    
+    fetch("https://usg.mtu.edu/internal/nav_data.json").then(async (res) => {
+        if(!res.ok){
+            return;
+        }
+        
+        var data = await res.json();
+        var div1 = document.getElementById("main-menu-col1");
+        var div2 = document.getElementById("main-menu-col2");
+        
+        div1.innerHTML = "";
+        
+        let categories = data["categories"];
+        
+        for(let i = 0; i < categories.length; i+=1){
+            
+            let category = categories[i];
+            
+            
+            let categoryHTML = `
+            
+            `
+            
+            if(category["link"]){
+                categoryHTML = `<a href="${category["link"]}" class="large-option color-primary">${category["name"]}</a>`
+            }else{
+                categoryHTML = `<span class="large-option color-primary">${category["name"]}</span>`
+            }
+            
+            let links = category["links"];
+            for(let l = 0; l < links.length; l+=1){
+                
+                if(links[l]["special"]){
+                    // deserves a special background
+                    categoryHTML += `
+                <a href="${links[l]["link"]}" class="small-option special" style="background-color:${links[l]["special"]}">${links[l]["title"]}</a>
+                `
+                }else{
+                    categoryHTML += `
+                <a href="${links[l]["link"]}" class="small-option special" style="background-color:transparent">${links[l]["title"]}</a>
+                `
+                }
+                
+                
+            }
+            
+            if(i % 2 == 0){
+                div1.innerHTML += `
+                ${categoryHTML}
+                `
+            }else{
+                div2.innerHTML += `
+                ${categoryHTML}
+                `
+            }
+        }
+        
+        
+        
+    })
+</script> -->

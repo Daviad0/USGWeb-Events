@@ -1,0 +1,104 @@
+<style>
+    .position-element{
+        padding:40px 20px;
+        
+    }
+    
+    .position-element span{
+        display: block;
+        text-align: center;
+    }
+    
+    .position-element img{
+        width: 100%;
+        margin-top: 20px;
+        border-radius: 10px;
+    }
+    
+    .position-element button{
+        margin-top: 10px;
+    }
+    
+    .flex-center{
+        display:flex;
+        justify-content: center;
+        align-items:center;
+        flex-wrap: wrap;
+    }
+    
+    .flex-center .col1{
+        width: 20%;
+        min-width: 200px;
+        max-width: 300px;
+        
+    }
+    
+    .flex-center .col2{
+        width: 20px;
+    }
+    
+    .flex-center .col3{
+        width: 40%;
+        min-width: 400px;
+    }
+</style>
+
+<div class="position-element bg-primary flex-center" name="president">
+    <div class="col1">
+        <span style="font-size: 2.5em;font-weight:bold;" name="name">Cole Pierucki</span>
+        <span style="font-size: 1.5em;" name="position">President</span>
+        <img src="https://cdn1.site-media.eu/images/0/11115977/Drawing.png" name="photo">
+    </div>
+    <div class="col2"></div>
+    <div class="col3">
+        <div name="description">
+            <span style="font-size: 2em"><strong>Pronouns:</strong> He / Him / His</span>
+        </div>
+        <div class="flex-center">
+            <button class="button button-variant-secondary">Contact</button>
+        </div>
+        
+    </div>
+</div>
+
+<script>
+    let keyMappings = {
+        "pronouns": "Pronouns",
+        "from": "Hometown",
+        "quote": "Quote",
+        "clubs": "Other Organizations",
+        "major": "Major / Minor",
+        "committees": "Committees"
+    }
+
+    try {
+        fetch('/internal/api/profile?positions=President').then(async (res) => {
+            let data = await res.json();
+            if (data.length == 0) {
+                document.querySelector("[name='president']").style.display = "none";
+            } else {
+                let target = data[0];
+
+                let element = document.querySelector("[name='president']");
+
+                if (target["photo"]) {
+                    element.querySelector("[name='photo']").src = target["photo"];
+                }
+                if (target["name"]) {
+                    element.querySelector("[name='name']").innerHTML = target["name"];
+                }
+                if (target["description"]) {
+                    let JSONobject = JSON.parse(target["description"]);
+                    let descriptionElement = element.querySelector("[name='description']");
+                    Object.keys(JSONobject).forEach(key => {
+                        let value = JSONobject[key];
+                        descriptionElement.innerHTML += `<span style="font-size: 2em"><strong>${keyMappings[key]}:</strong> ${value}</span>`
+                    }
+                    );
+                }
+            }
+        }
+        );
+    } catch (e) {
+    }
+</script>

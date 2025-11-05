@@ -1,0 +1,28 @@
+{
+    "title": "Break Bus Updateasdasdasd",
+    "description": "The Break Bus service is currently experiencing issues. We are working to resolve them as quickly as possible. Thank you for your patience.",
+    "icon": "thumbs_up_down",
+    "run_start": "2025-01-03T04:01",
+    "run_end": "2027-10-02T08:00",
+    "hidden": false,
+    "background_color": "var(--usg-secondary)",
+    "color": "var(--usg-background)",
+    "buttons": [
+        {
+            "text": "Vote in Your Representatives",
+            "url": "https://usg.mtu.edu/current-election",
+            "new_tab": false
+        },
+        {
+            "text": "Constitution Amendments",
+            "url": "https://usg.mtu.edu/vote",
+            "new_tab": false
+        },
+        {
+            "text": "RSO Voting Competition",
+            "url": "https://usg.mtu.edu/vote",
+            "new_tab": false
+        }
+    ],
+    "last_updated": "2025-11-05T15:06:15.665Z"
+}
