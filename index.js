@@ -160,7 +160,17 @@ app.get(`${route}/session`, refreshSession, (req, res) => {
     res.json(obj);
 });
 
-app.get(`${route}/authenticate`, refreshSession, cas.bounce, async (req, res) => {
+app.get(`${route}/request-login*`, (req, res) => {
+    // redirect to the /authenticate endpoint
+    // take in a returnTo query parameter
+    let returnTo = req.query.returnTo || '/';
+    // put into the session
+    req.session.cas_return_to = returnTo;
+
+    res.redirect(`${route}/authenticate`);
+});
+
+app.get(`${route}/authenticate*`, refreshSession, cas.bounce, async (req, res) => {
 
     let username = req.session.user;
     console.log("Authenticated user:", username);
@@ -199,7 +209,12 @@ app.get(`${route}/authenticate`, refreshSession, cas.bounce, async (req, res) =>
 
     // usg user is automatically an admin
 
-    res.redirect('/');
+    let returnTo = req.session.cas_return_to || '/';
+    
+    console.log("User info:", req.session.user_info);
+    console.log("Redirecting to:", returnTo);
+
+    res.redirect(returnTo);
 });
 
 app.get(`${route}/logout`, cas.logout, (req, res) => {
