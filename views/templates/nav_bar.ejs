@@ -59,7 +59,7 @@
 <div class="bg-primary login-banner">
     <% if(!session || !session.user) { %>
         <span>Not Logged In</span>
-        <button onclick="location.href='/internal/authenticate'" class="account-status-change">
+        <button onclick="location.href='/internal/request-login'" class="account-status-change">
             <span>Log In</span>
         </button>
     <% } else { %>
